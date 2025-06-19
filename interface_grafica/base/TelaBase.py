@@ -111,6 +111,7 @@ class TelaBase():
 
     def atualizar_pagina(self, conteudo : ft.Column):
         self.conteudo_pagina.content = conteudo
+        self.conteudo_pagina.content.scroll = ft.ScrollMode.AUTO
         self.conteudo_pagina.padding = 10
         self.conteudo_pagina.alignment = ft.alignment.top_left
         self.conteudo_pagina.update()
@@ -161,6 +162,19 @@ class TelaBase():
         return ft.TextField(width=tamanho, prefix_text=prefixo, text_size = 12, on_change=validar_input,
                             border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE, height = altura,
                             text_align=ft.TextAlign.LEFT, content_padding=ft.padding.symmetric(horizontal=8, vertical=8))
+    
+
+    def dropdown(self, texto : str = '', listaOpcoes : list = [], tamanho : int = 250, funcao = None) -> ft.Dropdown:
+        return ft.Dropdown(
+            border_width=1,
+            border_color=ft.Colors.GREY,
+            text_size=12,
+            content_padding=ft.padding.symmetric(horizontal=8, vertical=3),
+            options = [ft.dropdown.Option(elemento) for elemento in listaOpcoes],
+            hint_text=texto,
+            width=tamanho,
+            on_change=funcao
+        )
 
 
     ## IMPLEMENTAR AS CORES DEPOIS !

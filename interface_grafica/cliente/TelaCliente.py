@@ -1,6 +1,7 @@
 import flet as ft
-from InterfaceGrafica.TelaUsuario import TelaUsuario
-
+from interface_grafica.base.TelaUsuario import TelaUsuario
+from interface_grafica.cliente.PaginaFaturas import PaginaFaturas
+from interface_grafica.cliente.PaginaNumeros import PaginaNumeros
 
 class TelaCliente(TelaUsuario):
 
@@ -8,7 +9,7 @@ class TelaCliente(TelaUsuario):
 
         super().__init__(page = page, login_callback = login_callback)
         self.__menu_lateral = ft.Column(spacing = 5, expand = False)
-        self.numeros = ['(31) 91234-5678', '(31) 99876-5432', '(31) 93456-7890']
+        self.numeros_fake = ['(31) 91234-5678', '(31) 99876-5432', '(31) 93456-7890']
         self.planos = []
 
         # Usando Ref para acessar o container (possibilita animações)
@@ -18,6 +19,29 @@ class TelaCliente(TelaUsuario):
             content=ft.Column(ref=self.numeros_lista_ref, spacing=5), height=0, animate=ft.Animation(duration=300, 
             curve=ft.AnimationCurve.EASE_IN_OUT), clip_behavior=ft.ClipBehavior.HARD_EDGE,
             ref = self.numeros_expandiveis_ref, )
+        
+        self.__faturas = PaginaFaturas(self)
+        self.__numeros = PaginaNumeros(self)
+
+    @property
+    def faturas(self):
+        return self.__faturas
+    
+    @faturas.setter
+    def faturas(self, inst):
+        if not isinstance(inst, PaginaFaturas):
+            raise ValueError("")
+        self.__faturas = inst
+
+    @property
+    def numeros(self):
+        return self.__numeros
+    
+    @numeros.setter
+    def numeros(self, inst):
+        if not isinstance(inst, PaginaNumeros):
+            raise ValueError("")
+        self.__numeros = inst
 
     @property
     def numeros_expandiveis(self):
@@ -90,11 +114,12 @@ class TelaCliente(TelaUsuario):
     def paginas_menu_lateral(self, e : ft.ControlEvent):
         match e.control.text:
             case 'Editar dados':        self.pagina_editar_dados()
-            case 'Meus Números':        self.exibir_numeros()
+            case 'Meus Números':        self.numeros.pagina_meus_numeros()
             case 'Adicionar Número':    self.adicionar_numero()
-            case 'Faturas':             self.faturas()
+            case 'Faturas':             self.faturas.pagina_faturas()
             case 'Ajuda / Suporte':     self.ajuda_suporte()
             case 'Sair':                self.sair()
+
 
     def pagina_editar_dados(self) -> None:
 
@@ -119,117 +144,6 @@ class TelaCliente(TelaUsuario):
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, spacing=50,))
 
         self.atualizar_pagina(ft.Column([cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO))
-
-
-    def exibir_numeros(self) -> None:
-        
-        container = self.numeros_expandiveis_ref.current
-        coluna = self.numeros_lista_ref.current
-
-        if container.height == 0:
-            # Expandir
-            coluna.controls = [
-                ft.TextButton(
-                    text=num, icon=ft.Icons.CHEVRON_RIGHT,
-                    on_click= self._numero_clicado, width=200, height=40,
-                    style = ft.ButtonStyle(
-                        padding = 5,
-                        alignment = ft.alignment.center_left,
-                        shape = ft.RoundedRectangleBorder(radius=4),
-                        bgcolor= ft.Colors.with_opacity(0.04, ft.Colors.ON_SURFACE)
-                    )
-                )
-                for num in self.numeros
-            ]
-            container.height = len(self.numeros) * 45 + 10
-        else:
-            # Colapsar
-            container.height = 0
-
-        container.update()
-
-
-    def _numero_clicado(self, e):
-        
-        def card_titulo(texto : str = '', icone : ft.Icon = None) -> ft.Row:
-            return ft.Row([ft.Icon(icone, size = 24), ft.Text(texto, size = 18, weight = ft.FontWeight.BOLD)])
-
-        def linha_info(texto : str = '', info : str = '') -> ft.Row:
-            return(ft.Row([ft.Text(texto), ft.Text(info, size=14, weight=ft.FontWeight.BOLD)], alignment=ft.MainAxisAlignment.SPACE_BETWEEN))
-
-        def barra_progresso(progresso_percentual : float = 0.0) -> ft.ProgressBar:
-            return(ft.ProgressBar(value=progresso_percentual/100, 
-                    height=10, color=self.cor_barra_progresso, bgcolor=self.cor_cartao_2, width=float('inf')))
-
-        cabecalho = ft.Row([
-            ft.Column([ ft.Text(e.control.text, size=22, weight=ft.FontWeight.BOLD),
-                        ft.Row([ft.Text("Nome do plano", size=16), self.criar_botao("Ver detalhes", cor=False)], spacing = 10),
-                        ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),ft.Text("Ativo desde: XX/XX/2025")], spacing = 5),
-                        ft.Row([ft.Icon(ft.Icons.DONE), ft.Text("Status: Ativa")], spacing = 5),
-                        ft.Row([ft.Icon(ft.Icons.ATTACH_MONEY),ft.Text("Próxima fatura: R$ 45,90 - Vence: XX/XX/2025")], spacing = 5),
-                        ],spacing = 10, expand = True, alignment=ft.alignment.top_left),
-            ft.Column([ self.criar_botao("Cancelar número", ft.Icons.CANCEL),
-                        self.criar_botao("Transferir número", ft.Icons.COMPARE_ARROWS),
-                        self.criar_botao("Mudar assinatura (Plano)")],
-                        alignment=ft.alignment.top_right)
-        ])
-        internet = ft.Container(
-            padding = 15, border = ft.border.all(2), border_radius = 10,
-            content = ft.Column([
-                card_titulo("INTERNET", ft.Icons.WIFI),
-                ft.Text(f"{73}% utilizados ({730} MB de {1000} MB)"),
-                barra_progresso(73),
-                ft.Row([self.criar_botao("Comprar pacote extra", ft.Icons.ADD),
-                        self.criar_botao("Ver consumo", ft.Icons.LIST_ALT)],
-                       alignment=ft.MainAxisAlignment.START, spacing = 10),
-            ])
-        )
-        minutos = ft.Container(
-            padding = 15, border = ft.border.all(2), border_radius = 10,
-            content=ft.Column([
-                card_titulo("MINUTOS", ft.Icons.PHONE),
-                ft.Text(f"{60}% utilizados (6 ligações - 37/60 min)"),
-                linha_info("Renova em", "11/07/2025"),
-                barra_progresso(60),
-                ft.Row([self.criar_botao("Adicionar minutos", ft.Icons.ADD),
-                        self.criar_botao("Ver ligações", ft.Icons.LIST_ALT)],
-                       alignment=ft.MainAxisAlignment.START, spacing = 10),
-            ])
-        )
-        mensagens = ft.Container(
-            padding = 15, border = ft.border.all(2), border_radius=10,
-            content=ft.Column([
-                card_titulo("MENSAGENS", ft.Icons.MESSAGE),
-                ft.Text(f"{40} de 100 mensagens utilizados ({60} disponíveis)"),
-                linha_info("Renova em", "11/07/2025"),
-                barra_progresso(40),
-                ft.Row([self.criar_botao("Comprar pacote de mensagens", ft.Icons.ADD),
-                        self.criar_botao("Ver histórico", ft.Icons.LIST_ALT)],
-                       alignment=ft.MainAxisAlignment.START, spacing = 10),
-            ])
-        )
-        saldos = ft.Container(
-            padding = 15, border = ft.border.all(2), border_radius = 10,
-            content = ft.Column([
-                card_titulo("SALDOS", ft.Icons.ATTACH_MONEY),
-                linha_info("Saldo atual", f"{0.0}"),
-                linha_info("Última recarga", "11/06/2025"),
-                linha_info("Expira em", "11/07/2025"),
-                ft.Row([self.criar_botao("Fazer recarga", ft.Icons.ADD),
-                        self.criar_botao("Ver histórico", ft.Icons.LIST_ALT)],
-                       alignment=ft.MainAxisAlignment.START, spacing = 10),
-            ])
-        )
-
-        self.atualizar_pagina(
-            ft.Column(
-            [cabecalho, ft.Divider(thickness=2),
-             ft.Row([
-             ft.Column([internet, mensagens], expand = True, alignment = ft.MainAxisAlignment.START, width = 450), 
-             ft.Column([minutos, saldos], expand = True, alignment = ft.MainAxisAlignment.START, width = 450)], expand = True
-             , alignment = ft.alignment.top_left)], spacing=20, scroll=ft.ScrollMode.AUTO
-            )
-        )
 
 
     def adicionar_numero(self) -> None:
@@ -343,56 +257,6 @@ class TelaCliente(TelaUsuario):
                 ]),
                 plano_selecionado,
                 recarga_valor], scroll=ft.ScrollMode.AUTO
-            )
-        )
-
-    def faturas(self) -> None:
-
-        numero_selecionado = ft.Ref[ft.Dropdown]()
-        mes_selecionado = ft.Ref[ft.Dropdown]()
-        container_detalhes = ft.Ref[ft.Container]()
-
-        def atualizar_fatura(e = None):
-            if not numero_selecionado.current.value or not mes_selecionado.current.value:
-                return
-            container_detalhes.current.content = ft.Column([
-                ft.Text("Fatura da linha", size=18, weight=ft.FontWeight.BOLD),
-                ft.Text(f"Número: {numero_selecionado.current.value}", size=16),
-                ft.Text(f"Referente a: {mes_selecionado.current.value}", size=16),
-                ft.Divider(thickness=1),
-                ft.Text("Valor total: R$ 79,90", size=16, weight=ft.FontWeight.BOLD),
-                ft.Text("Vencimento: 10/06/2025", size=14),
-                ft.Divider(),
-                ft.Row([
-                    ft.OutlinedButton("Pagar com Pix", icon=ft.Icons.PIX, on_click=lambda e: print("Pagamento com Pix")),
-                    ft.OutlinedButton("Exibir código de barras", icon=ft.Icons.VIEW_HEADLINE, on_click=lambda e: print("Exibindo código de barras")),
-                ], spacing=15),
-                ft.Divider(),
-                ft.Text("Detalhes da Fatura", size=16, weight=ft.FontWeight.BOLD),
-                ft.ListTile(title=ft.Text("Plano mensal"), trailing=ft.Text("R$ 49,90")),
-                ft.ListTile(title=ft.Text("Internet extra"), trailing=ft.Text("R$ 20,00")),
-                ft.ListTile(title=ft.Text("Impostos e taxas"), trailing=ft.Text("R$ 10,00")),
-            ])
-            container_detalhes.current.update()
-
-        meses = ["06/2025", "05/2025", "04/2025", "03/2025"]
-
-        numero_dropdown = ft.Dropdown(
-            label="Escolha um número", options=[ft.dropdown.Option(n) for n in self.numeros],
-            on_change = atualizar_fatura, ref=numero_selecionado, width=300,
-        )
-        mes_dropdown = ft.Dropdown(
-            label="Mês de Referência", options = [ft.dropdown.Option(m) for m in meses],
-            on_change = atualizar_fatura, ref = mes_selecionado, width=300,
-        )
-
-        self.atualizar_pagina(
-            ft.Column([
-                ft.Text("Faturas", size=22, weight=ft.FontWeight.BOLD),
-                ft.Divider(thickness=2),
-                ft.Row([numero_dropdown, mes_dropdown], spacing=20),
-                ft.Container(ref=container_detalhes, padding=10)
-                ], spacing=20, scroll=ft.ScrollMode.AUTO
             )
         )
 

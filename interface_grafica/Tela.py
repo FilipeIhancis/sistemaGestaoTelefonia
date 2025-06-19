@@ -1,7 +1,7 @@
 import flet as ft
-from InterfaceGrafica.TelaBase import TelaBase
-from InterfaceGrafica.TelaCliente import TelaCliente
-from InterfaceGrafica.TelaAdministrador import TelaAdministrador
+from interface_grafica.base.TelaBase import TelaBase
+from interface_grafica.cliente.TelaCliente import TelaCliente
+from interface_grafica.administrador.TelaAdministrador import TelaAdministrador
 
 # Credenciais cadastradas (simulação)
 email_cadastrado = ["filipe@gmail.com", "admin@gmail.com", "admin"]
@@ -20,11 +20,10 @@ class Tela(TelaBase):
 
         self.page = page
         self.page.clean()
-        self.page.title = 'Projeto Final'
         self.page.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.page.theme_mode = ft.ThemeMode.DARK
-        self.page.window_width = 600
-        self.page.window_height = 600
+        self.page.window_width = 800
+        self.page.window_height = 800
         self.page.window_resizable = True
 
         # Campos de entrada

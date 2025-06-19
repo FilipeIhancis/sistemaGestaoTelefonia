@@ -1,5 +1,5 @@
 import flet as ft
-from InterfaceGrafica.TelaBase import TelaBase
+from interface_grafica.base.TelaBase import TelaBase
 from abc import ABC, abstractmethod
 import threading
 
