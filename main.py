@@ -1,6 +1,6 @@
 # MAIN
 
-from InterfaceGrafica.Tela import Tela
+from interface_grafica.Tela import Tela
 
 if __name__ == "__main__":
     
