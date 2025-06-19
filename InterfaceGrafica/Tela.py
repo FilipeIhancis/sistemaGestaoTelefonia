@@ -6,14 +6,36 @@ from InterfaceGrafica.TelaAdministrador import TelaAdministrador
 email_cadastrado = ["filipe@gmail.com", "admin@gmail.com", "admin"]
 senha_cadastrada = "12345"
 
+
 class Tela():
 
     def __init__(self):
-        super().__init__()
-        self.page = None
+        self.__app = ft.app
+        self._page = None
+
+    @property
+    def page(self):
+        return self._page
+
+    @page.setter
+    def page(self, pagina: ft.Page):
+        if not isinstance(pagina, ft.Page):
+            raise ValueError("Página inválida.")
+        self._page = pagina
+    
+    @property
+    def app(self):
+        return self.__app
+    
+    @app.setter
+    def app(self, aplicativo):
+        if not callable(aplicativo):
+            raise ValueError("Aplicativo inválido: deve ser uma função")
+        self.__app = aplicativo
 
     def iniciar(self):
-        ft.app(target = self.pagina_login)
+        self.app(target = self.pagina_login)
+        #ft.app(target = self.pagina_login)
 
     def pagina_login(self, page: ft.Page) -> None:
 
@@ -27,8 +49,8 @@ class Tela():
         self.page.window_resizable = True
 
         # Campos de entrada
-        email = ft.TextField(label='Email', text_align=ft.TextAlign.LEFT, width=200)
-        senha = ft.TextField(label='Senha', text_align=ft.TextAlign.LEFT, width=200, password = True)
+        email = ft.TextField(label='Email', text_align=ft.TextAlign.LEFT, width=200, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
+        senha = ft.TextField(label='Senha', text_align=ft.TextAlign.LEFT, width=200, password = True, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
         botao_entrar = ft.ElevatedButton(text='Entrar', width=200, disabled = True)
 
         # Textos na tela
