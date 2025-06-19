@@ -1,20 +1,28 @@
 import flet as ft
-from abc import ABC, abstractmethod
-import threading
 
+class TelaBase():
 
-class TelaBase(ABC):
-
-    def __init__(self, page : ft.Page, login_callback):
+    def __init__(self, page : ft.Page):
+        
+        self.__app = ft.app
         self._page = page
-        self._login_callback = login_callback
-        self._conteudo_pagina_principal = ft.Container(expand=True, alignment=ft.alignment.center)
-        self._cor_barra_progresso : str = ''
-        self._cor_botao : str = ''
-        self._cor_cartao_1 : str = ''
-        self._cor_cartao_2 : str = ''
-        self._cor_cartao_3 : str = ''
+        self.__conteudo_pagina = ft.Container(expand=True, alignment=ft.alignment.center)
+        self.__cor_barra_progresso : str = ''
+        self.__cor_botao : str = ''
+        self.__cor_cartao_1 : str = ''
+        self.__cor_cartao_2 : str = ''
+        self.__cor_cartao_3 : str = ''
         self.definir_cor_azul()
+
+    @property
+    def app(self):
+        return self.__app
+    
+    @app.setter
+    def app(self, aplicativo):
+        if not callable(aplicativo):
+            raise ValueError("Aplicativo inválido: deve ser uma função")
+        self.__app = aplicativo
 
     @property
     def login_callback(self):
@@ -29,103 +37,84 @@ class TelaBase(ABC):
     @property
     def page(self):
         return self._page
+    
+    @page.setter
+    def page(self, pagina : ft.Page):
+        self._page = pagina
 
     @property
-    def conteudo_pagina_principal(self):
-        return self._conteudo_pagina_principal
+    def conteudo_pagina(self):
+        return self.__conteudo_pagina
     
-    @conteudo_pagina_principal.setter
-    def conteudo_pagina_principal(self, conteudo):
+    @conteudo_pagina.setter
+    def conteudo_pagina(self, conteudo):
         if not isinstance(conteudo, ft.Container):
             raise ValueError("Não é do tipo Container")
-        self._conteudo_pagina_principal = conteudo
+        self.__conteudo_pagina = conteudo
 
     @property
     def cor_botao(self):
-        return self._cor_botao
+        return self.__cor_botao
     
     @cor_botao.setter
     def cor_botao(self, cor : str):
         if not isinstance(cor, str):
             raise Value("Cor inválida")
-        self._cor_botao = cor
+        self.__cor_botao = cor
     
     @property
     def cor_cartao_1(self):
-        return self._cor_cartao_1
+        return self.__cor_cartao_1
     
     @cor_cartao_1.setter
     def cor_cartao_1(self, cor : str):
         if not isinstance(cor, str):
             raise ValueError("Cor inválida")
-        self._cor_cartao_1 = cor
+        self.__cor_cartao_1 = cor
     
     @property
     def cor_cartao_2(self):
-        return self._cor_cartao_2
+        return self.__cor_cartao_2
     
     @cor_cartao_2.setter
     def cor_cartao_2(self, cor : str):
         if not isinstance(cor, str):
             raise ValueError("Cor inválida")
-        self._cor_cartao_2 = cor
+        self.__cor_cartao_2 = cor
     
     @property
     def cor_cartao_3(self):
-        return self._cor_cartao_3
+        return self.__cor_cartao_3
     
     @cor_cartao_3.setter
     def cor_cartao_3(self, cor : str):
         if not isinstance(cor, str):
             raise ValueError("Cor inválida")
-        self._cor_cartao_3 = cor
+        self.__cor_cartao_3 = cor
     
     @property
     def cor_barra_progresso(self):
-        return self._cor_barra_progresso
+        return self.__cor_barra_progresso
     
     @cor_barra_progresso.setter
     def cor_barra_progresso(self, cor : str):
         if not isinstance(cor, str):
             raise ValueError("Cor inválida")
-        self._cor_barra_progresso = cor
+        self.__cor_barra_progresso = cor
+
     
-    @abstractmethod
-    def pagina_principal(self) -> None:
-        pass
+    def iniciar(self, pagina_inicio : None):
+        if not callable(pagina_inicio):
+            raise ValueError("Página inválida para dar início à interface gráfica")
+        self.app(target = pagina_inicio)
 
-    @abstractmethod
-    def paginas_menu_lateral(self, e : ft.ControlEvent) -> None:
-        pass
 
-    def sair(self) -> None:
+    def atualizar_pagina(self, conteudo : ft.Column):
+        self.conteudo_pagina.content = conteudo
+        self.conteudo_pagina.padding = 10
+        self.conteudo_pagina.alignment = ft.alignment.top_left
+        self.conteudo_pagina.update()
 
-        alerta_dialogo = None 
-
-        def confirmar_saida(e = None):
-            nonlocal alerta_dialogo
-            self.page.close(alerta_dialogo)
-            self.page.update()
-            threading.Timer(0.2, lambda: self.login_callback(self.page)).start()
-        
-        def cancelar_saida(e = None):
-            nonlocal alerta_dialogo
-            self.page.close(alerta_dialogo)
-            self.page.update()
-            threading.Timer(0.2, lambda: self.pagina_principal()).start()
-
-        alerta_dialogo = ft.AlertDialog(
-            modal = True, title = ft.Text("Confirme a ação"),
-            content = ft.Text("Deseja sair?"),
-            actions = [
-                ft.TextButton("Sair", on_click = confirmar_saida),
-                ft.TextButton("Cancelar", on_click = cancelar_saida)
-            ],
-            actions_alignment = ft.MainAxisAlignment.END,
-        )
-        self.page.dialog = alerta_dialogo
-        self.page.open(alerta_dialogo)
-        self.page.update()
 
     def criar_botao(self, texto:str='', icone : ft.Icon=None, funcao=None, cor:bool = True) -> ft.ElevatedButton:
         if cor:
@@ -174,11 +163,12 @@ class TelaBase(ABC):
                             text_align=ft.TextAlign.LEFT, content_padding=ft.padding.symmetric(horizontal=8, vertical=8))
 
 
-    def definir_cor_vermelho(self) -> None:
-        self.cor_botao = "#372D6D"
-        self.cor_cartao_1 = "#282727"
-        self.cor_cartao_2 = "#272244"
+    ## IMPLEMENTAR AS CORES DEPOIS !
 
+    def definir_cor_vermelho(self) -> None:
+        self.cor_botao = "#6D2D2D"
+        self.cor_cartao_1 = "#282727"
+        self.cor_cartao_2 = "#442222"
 
     def definir_cor_azul(self) -> None:
         self.cor_botao = "#372D6D"

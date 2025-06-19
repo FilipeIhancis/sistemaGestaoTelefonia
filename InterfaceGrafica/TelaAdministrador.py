@@ -1,5 +1,5 @@
 import flet as ft
-from InterfaceGrafica.TelaBase import TelaBase
+from InterfaceGrafica.TelaUsuario import TelaUsuario
 
 clientes = [
     {"email": "filipe@gmail.com", "numeros": ["9999999999", "8888888888", "7777777777", "6666666666", "5555555555"]},
@@ -10,11 +10,10 @@ clientes = [
 ]
 
 
-class TelaAdministrador(TelaBase):
+class TelaAdministrador(TelaUsuario):
 
     def __init__(self, page : ft.Page, login_callback):
         super().__init__(page = page, login_callback = login_callback)
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
 
     def pagina_principal(self) -> None:
         
@@ -55,7 +54,7 @@ class TelaAdministrador(TelaBase):
         # Layout principal
         layout = ft.Column([
             cabecalho,
-            ft.Row([menu, ft.VerticalDivider(width=1), self.conteudo_pagina_principal], expand=True, alignment=ft.alignment.top_left)
+            ft.Row([menu, ft.VerticalDivider(width=1), self.conteudo_pagina], expand=True, alignment=ft.alignment.top_left)
             ],
             expand=True
         )
@@ -109,9 +108,7 @@ class TelaAdministrador(TelaBase):
                 ], spacing=15, width=500
             )
         )
-        self.conteudo_pagina_principal.content = ft.Column(controls=[cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina(ft.Column(controls=[cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO))
 
 
 
@@ -147,13 +144,13 @@ class TelaAdministrador(TelaBase):
             ft.Row([ft.Icon(ft.Icons.PHONE),ft.Text("Clientes cadastrados", size = 22, weight = ft.FontWeight.BOLD)], spacing = 15)
         ]))
 
-        self.conteudo_pagina_principal.content = ft.Column( controls = [ cabecalho, ft.Divider(thickness=2),
-            ft.Row( wrap=True, spacing=20, run_spacing=20, expand = True, scroll = ft.ScrollMode.AUTO,
-                    controls=[self.criar_cartao_cliente(c) for c in clientes])
-        ], scroll = ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina(
+            ft.Column( controls = [ cabecalho, ft.Divider(thickness=2),
+                ft.Row( wrap=True, spacing=20, run_spacing=20, expand = True, scroll = ft.ScrollMode.AUTO,
+                        controls=[self.criar_cartao_cliente(c) for c in clientes])
+                ], scroll = ft.ScrollMode.AUTO
+            )
+        )
 
 
     def pagina_edicao_numero(self, e) -> None:
@@ -228,13 +225,11 @@ class TelaAdministrador(TelaBase):
         cancelar = ft.ElevatedButton("Cancelar", bgcolor = self.cor_botao, color = ft.Colors.WHITE,
                                         style=ft.ButtonStyle( padding=ft.padding.symmetric(vertical=15, horizontal=30)))
 
-        self.conteudo_pagina_principal.content = ft.Column( controls=[
-            cabecalho, ft.Divider(thickness=2), ft.Row([campo1, campo2]), ft.Row([salvar, cancelar])
-        ], scroll = ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
-
+        self.atualizar_pagina(
+            ft.Column(scroll = ft.ScrollMode.AUTO, controls=[
+                cabecalho, ft.Divider(thickness=2), ft.Row([campo1, campo2]), ft.Row([salvar, cancelar])]
+            )
+        )
 
     def reenviar_fatura(self, e) -> None:
         print("Reenviando fatura clicada")
@@ -256,11 +251,8 @@ class TelaAdministrador(TelaBase):
              self.criar_cartao_fatura(['(31) yyyyyyyyy', 'Z/2025', 39.90, 'Vencida', 'XX/XX/2025', 'YY/YY/2025'])]
         )
 
-        self.conteudo_pagina_principal.content = ft.Column(
-            controls = [cabecalho, ft.Divider(thickness=2), faturas], scroll = ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina(ft.Column(controls = [cabecalho, ft.Divider(thickness=2), faturas], scroll = ft.ScrollMode.AUTO))
+
 
     def criar_cartao_fatura(self, fatura : list = []) -> ft.Container:
 
@@ -310,9 +302,8 @@ class TelaAdministrador(TelaBase):
             {"numero": "004", "solicitante": "Ana", "descricao": "xxxxxxxxxxxxxxxxxxxx", "status": "Pendente"},
         ]
 
-        self.conteudo_pagina_principal.content = ft.Container(
-            expand = True, padding = 10,
-            content = ft.Column(
+        self.atualizar_pagina(
+            ft.Column(
                 expand = True,
                 scroll = ft.ScrollMode.AUTO,
                 controls = [
@@ -326,8 +317,8 @@ class TelaAdministrador(TelaBase):
                         ]
                     )
             ]
-        ))
-        self.page.update()
+            )
+        )
 
 
     def criar_cartao_solicitacao(self, numero, solicitante, descricao, status) -> ft.Container:
@@ -409,13 +400,7 @@ class TelaAdministrador(TelaBase):
                 for d in dados])
             ])
 
-        self.conteudo_pagina_principal.content = ft.Column(
-            controls=[cabecalho, ft.Divider(thickness=2), planos],
-            scroll=ft.ScrollMode.AUTO
-        )
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina( ft.Column( controls=[cabecalho, ft.Divider(thickness=2), planos], scroll=ft.ScrollMode.AUTO) )
 
 
     def criar_cartao_plano(self, nome_plano, valor, dados_internet, valor_recarga, max_ligacoes, max_mensagens, clientes_usuarios, on_editar, on_excluir):
@@ -544,7 +529,8 @@ class TelaAdministrador(TelaBase):
             spacing=8, alignment=ft.MainAxisAlignment.START,
         )
         # Conteúdo principal
-        self.conteudo_pagina_principal.content = ft.Column(
+        self.atualizar_pagina(
+            ft.Column(
             controls=[
                 cabecalho,
                 ft.Divider(thickness=2),
@@ -559,35 +545,60 @@ class TelaAdministrador(TelaBase):
             spacing=10,
             alignment=ft.MainAxisAlignment.START,
             expand=True, scroll=ft.ScrollMode.AUTO
+            )
         )
-        self.conteudo_pagina_principal.update()
 
     def pagina_adicionar_plano(self, e) -> None:
 
-        cabecalho = ft.Text("Novo Plano", size = 22, weight=ft.FontWeight.BOLD)
+        cabecalho = ft.Row([ft.Icon(ft.Icons.LIST_ALT), ft.Text("Novo Plano", size = 22, weight=ft.FontWeight.BOLD)], spacing=10)
+
+        def criar_linha(texto : str, textField : ft.TextField) -> ft.Row:
+            return ft.Row(
+                [ft.Text(value=texto, weight=ft.FontWeight.BOLD), textField],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            )
 
         nome = self.textField(tamanho=100)
         max_lig = self.textField(tamanho=100, inteiro=True)
         max_msg = self.textField(tamanho=100, inteiro=True)
         dados_internet = self.textField(tamanho=100, inteiro=True)
+        valor_mensal = self.textField(tamanho=100, flutuante=True)
+        valor_recarga = self.textField(tamanho=100, flutuante=True)
+        valor_pacote_msg = self.textField(tamanho=100, flutuante=True)
+        valor_pacote_lig = self.textField(tamanho=100, flutuante=True)
         dados_internet.suffix_text = 'MB'
+        valor_mensal.prefix_text = 'R$'
+        valor_recarga.prefix_text = 'R$'
+        valor_pacote_lig.prefix_text = 'R$'
+        valor_pacote_msg.prefix_text = 'R$'
         
         dados = ft.Container(padding=15, width=350, expand=True, border=ft.border.all(1), border_radius=8, content= ft.Column([
             ft.Row([ ft.Icon(ft.Icons.INFO), ft.Text('Dados',size=18, weight=ft.FontWeight.BOLD) ], spacing=10),
             ft.Divider(thickness=1),
-            ft.Row([ft.Text('Nome', weight=ft.FontWeight.BOLD), nome], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            ft.Row([ft.Text('Dados de Internet (MB)', weight=ft.FontWeight.BOLD), dados_internet], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            ft.Row([ft.Text('Máximo de ligações', weight=ft.FontWeight.BOLD), max_lig], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            ft.Row([ft.Text('Máximo de mensagens', weight=ft.FontWeight.BOLD), max_msg], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+            criar_linha('Nome', nome),
+            criar_linha('Dados de Internet (MB)', dados_internet),
+            criar_linha('Máximo de ligações', max_lig),
+            criar_linha('Máximo de mensagens', max_msg)
             ])
         )
+        valores = ft.Container(padding = 15, width = 400, expand=True, border=ft.border.all(1), border_radius=8, content=ft.Column([
+            ft.Row([ ft.Icon(ft.Icons.ATTACH_MONEY), ft.Text('Valores',size=18, weight=ft.FontWeight.BOLD) ], spacing=10),
+            ft.Divider(thickness=1),
+            criar_linha('Valor mensal', valor_mensal),
+            criar_linha('Valor de recarga', valor_recarga),
+            criar_linha('Valor pacote de mensagens', valor_pacote_msg),
+            criar_linha('Valor pacote de ligações', valor_pacote_lig)
+        ]))
 
-        self.conteudo_pagina_principal.content = ft.Column(scroll=ft.ScrollMode.AUTO, controls=[
-            cabecalho, ft.Divider(thickness=2), dados
+        botoes = ft.Row(spacing = 5, controls=[
+            self.criar_botao('Criar', funcao=None), self.criar_botao('Cancelar')
         ])
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+
+        self.atualizar_pagina(
+            ft.Column(scroll=ft.ScrollMode.AUTO, controls=[
+            cabecalho, ft.Divider(thickness=2), ft.Row([dados, valores]), botoes
+            ])
+        )
 
 
     def pagina_adicionar_numero_cliente(self) -> None:
