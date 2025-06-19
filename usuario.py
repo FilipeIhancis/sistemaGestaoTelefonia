@@ -32,9 +32,3 @@ class Usuario:
 
         return cpf[-2:] == f"{digito1}{digito2}"
     
-
-    def verifica_login(self) -> bool:
-        pass
-    
-
-
