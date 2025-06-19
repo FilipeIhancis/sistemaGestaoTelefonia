@@ -1,8 +1,8 @@
 import flet as ft
-from InterfaceGrafica.TelaBase import TelaBase
+from InterfaceGrafica.TelaUsuario import TelaUsuario
 
 
-class TelaCliente(TelaBase):
+class TelaCliente(TelaUsuario):
 
     def __init__(self, page : ft.Page, login_callback):
 
@@ -58,7 +58,7 @@ class TelaCliente(TelaBase):
         self.criar_menu_lateral()
 
         # Layout principal
-        layout = ft.Column([cabecalho, ft.Row([menu, ft.VerticalDivider(width=1), self.conteudo_pagina_principal], expand=True)], expand=True)
+        layout = ft.Column([cabecalho, ft.Row([menu, ft.VerticalDivider(width=1), self.conteudo_pagina], expand=True)], expand=True)
         
         # Cria a página:
         self.page.add(layout)
@@ -85,6 +85,7 @@ class TelaCliente(TelaBase):
 
             if texto == "Meus Números":
                 self.menu_lateral.controls.append(self.numeros_expandiveis)
+                
 
     def paginas_menu_lateral(self, e : ft.ControlEvent):
         match e.control.text:
@@ -117,11 +118,7 @@ class TelaCliente(TelaBase):
                 [self.criar_botao("Alterar email"), self.criar_botao("Alterar senha")]),
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, spacing=50,))
 
-
-        self.conteudo_pagina_principal.content = ft.Column([cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina(ft.Column([cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO))
 
 
     def exibir_numeros(self) -> None:
@@ -223,16 +220,16 @@ class TelaCliente(TelaBase):
                        alignment=ft.MainAxisAlignment.START, spacing = 10),
             ])
         )
-        self.conteudo_pagina_principal.content = ft.Column(
+
+        self.atualizar_pagina(
+            ft.Column(
             [cabecalho, ft.Divider(thickness=2),
              ft.Row([
              ft.Column([internet, mensagens], expand = True, alignment = ft.MainAxisAlignment.START, width = 450), 
              ft.Column([minutos, saldos], expand = True, alignment = ft.MainAxisAlignment.START, width = 450)], expand = True
              , alignment = ft.alignment.top_left)], spacing=20, scroll=ft.ScrollMode.AUTO
             )
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        )
 
 
     def adicionar_numero(self) -> None:
@@ -323,33 +320,31 @@ class TelaCliente(TelaBase):
 
         self.planos = [plano1, plano2, plano3]
 
-        self.conteudo_pagina_principal.content = ft.Column([
-            cabecalho,
-            ft.Divider(thickness=2),
-            ft.Container( content=ft.Column([
-                    ft.Text("Escolha seu plano", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row([plano1, plano2, plano3], alignment=ft.MainAxisAlignment.START),
+        self.atualizar_pagina(
+            ft.Column([
+                cabecalho,
+                ft.Divider(thickness=2),
+                ft.Container( content=ft.Column([
+                        ft.Text("Escolha seu plano", size=18, weight=ft.FontWeight.BOLD),
+                        ft.Row([plano1, plano2, plano3], alignment=ft.MainAxisAlignment.START),
+                    ]),
+                    padding=10, border=ft.border.all(1), border_radius=10, margin=10
+                ),
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text("Recarga inicial", size=18, weight=ft.FontWeight.BOLD),
+                        ft.Row([ ft.Text("Valor: "), recarga_group ])
+                    ]),
+                    padding=10, border=ft.border.all(1), border_radius=10, margin=10
+                ),
+                ft.Row([
+                    ft.ElevatedButton("Solicitar número", on_click = solicitar_numero, bgcolor = self.cor_botao),
+                    ft.ElevatedButton("Cancelar", on_click = lambda e: self.pagina_principal(), bgcolor = self.cor_botao)
                 ]),
-                padding=10, border=ft.border.all(1), border_radius=10, margin=10
-            ),
-            ft.Container(
-                content=ft.Column([
-                    ft.Text("Recarga inicial", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row([ ft.Text("Valor: "), recarga_group ])
-                ]),
-                padding=10, border=ft.border.all(1), border_radius=10, margin=10
-            ),
-            ft.Row([
-                ft.ElevatedButton("Solicitar número", on_click = solicitar_numero, bgcolor = self.cor_botao),
-                ft.ElevatedButton("Cancelar", on_click = lambda e: self.pagina_principal(), bgcolor = self.cor_botao)
-            ]),
-            plano_selecionado,
-            recarga_valor], scroll=ft.ScrollMode.AUTO
+                plano_selecionado,
+                recarga_valor], scroll=ft.ScrollMode.AUTO
+            )
         )
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
-
 
     def faturas(self) -> None:
 
@@ -391,15 +386,15 @@ class TelaCliente(TelaBase):
             on_change = atualizar_fatura, ref = mes_selecionado, width=300,
         )
 
-        self.conteudo_pagina_principal.content = ft.Column([
-            ft.Text("Faturas", size=22, weight=ft.FontWeight.BOLD),
-            ft.Divider(thickness=2),
-            ft.Row([numero_dropdown, mes_dropdown], spacing=20),
-            ft.Container(ref=container_detalhes, padding=10)
-        ], spacing=20, scroll=ft.ScrollMode.AUTO)
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()
+        self.atualizar_pagina(
+            ft.Column([
+                ft.Text("Faturas", size=22, weight=ft.FontWeight.BOLD),
+                ft.Divider(thickness=2),
+                ft.Row([numero_dropdown, mes_dropdown], spacing=20),
+                ft.Container(ref=container_detalhes, padding=10)
+                ], spacing=20, scroll=ft.ScrollMode.AUTO
+            )
+        )
 
             
     def ajuda_suporte(self) -> None:
@@ -434,11 +429,10 @@ class TelaCliente(TelaBase):
                 padding = 20, border = ft.border.all(1), border_radius=10, expand = True, alignment=ft.alignment.top_left
         )
 
-        self.conteudo_pagina_principal.content = ft.Column(
-            [cabecalho, ft.Divider(thickness=2),
-            ft.Row(controls=[botoes_ajuda,formulario], alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.START)],
-            scroll = ft.ScrollMode.AUTO
+        self.atualizar_pagina(
+            ft.Column(
+                [cabecalho, ft.Divider(thickness=2),
+                ft.Row(controls=[botoes_ajuda,formulario], alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.START)],
+                scroll = ft.ScrollMode.AUTO
+            )
         )
-        self.conteudo_pagina_principal.padding = 10
-        self.conteudo_pagina_principal.alignment = ft.alignment.top_left
-        self.conteudo_pagina_principal.update()

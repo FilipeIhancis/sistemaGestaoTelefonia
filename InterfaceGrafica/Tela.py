@@ -1,4 +1,5 @@
 import flet as ft
+from InterfaceGrafica.TelaBase import TelaBase
 from InterfaceGrafica.TelaCliente import TelaCliente
 from InterfaceGrafica.TelaAdministrador import TelaAdministrador
 
@@ -7,35 +8,13 @@ email_cadastrado = ["filipe@gmail.com", "admin@gmail.com", "admin"]
 senha_cadastrada = "12345"
 
 
-class Tela():
+class Tela(TelaBase):
 
     def __init__(self):
-        self.__app = ft.app
-        self._page = None
-
-    @property
-    def page(self):
-        return self._page
-
-    @page.setter
-    def page(self, pagina: ft.Page):
-        if not isinstance(pagina, ft.Page):
-            raise ValueError("Página inválida.")
-        self._page = pagina
-    
-    @property
-    def app(self):
-        return self.__app
-    
-    @app.setter
-    def app(self, aplicativo):
-        if not callable(aplicativo):
-            raise ValueError("Aplicativo inválido: deve ser uma função")
-        self.__app = aplicativo
+        super().__init__(None)
 
     def iniciar(self):
-        self.app(target = self.pagina_login)
-        #ft.app(target = self.pagina_login)
+        super().iniciar(self.pagina_login)
 
     def pagina_login(self, page: ft.Page) -> None:
 
