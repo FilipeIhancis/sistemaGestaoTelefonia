@@ -4,9 +4,11 @@ from interface_grafica.administrador.PaginaCadastros import PaginaCadastro
 
 class PaginaPlanos(SubTela):
 
+
     def __init__(self, tela_admin):
         super().__init__(tela_admin=tela_admin)
         self.cadastros = PaginaCadastro(tela_admin=tela_admin)
+
 
     def pagina_planos(self) -> None:
 
@@ -40,34 +42,42 @@ class PaginaPlanos(SubTela):
     def criar_cartao_plano(self, nome_plano, valor, dados_internet, valor_recarga, max_ligacoes, max_mensagens, clientes_usuarios, on_editar, on_excluir) -> ft.Container:
 
         def linha(label, valor):
-            return ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[ft.Text(label, size=14, weight=ft.FontWeight.BOLD), ft.Text(valor, size=14)])
-        
+            return ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN, spacing=5,
+                controls=[
+                    ft.Text(label, size=12, weight=ft.FontWeight.BOLD),
+                    ft.Text(valor, size=12),
+                ]
+            )
         return ft.Container(
-            width=300, border=ft.border.all(2), border_radius=8,
+            width=260, border=ft.border.all(1), border_radius=6, padding=8,
             content=ft.Column([
-                # Cabeçalho
-                ft.Container(
-                    bgcolor= self.tela.cor_cartao_2, padding=ft.padding.all(10), alignment=ft.alignment.center, width=float("inf"),
-                    content=ft.Text(nome_plano, color=ft.Colors.WHITE, size=16, weight=ft.FontWeight.BOLD), border=ft.border.all(1)
-                ),
-                # Informações
-                ft.Container(content = ft.Container( #border=ft.border.all(1),
-                    padding = 15, bgcolor=self.tela.cor_cartao_1, border_radius=4,
-                    content=ft.Column([
-                        linha("VALOR:", f"R$ {valor}"),
-                        linha("DADOS DE INTERNET", f"{dados_internet} GB"),
-                        linha("VALOR RECARGA:", f"R$ {valor_recarga}"),
-                        linha("MÁXIMO DE LIGAÇÕES", str(max_ligacoes)),
-                        linha("MÁXIMO DE MENSAGENS", str(max_mensagens)),
-                        linha("CLIENTES USUÁRIOS", str(clientes_usuarios)),
-                    ])
-                )),
-                # Botões
-                ft.Container(padding=ft.padding.all(5), content=
-                    ft.Row([self.tela.criar_botao('Editar', funcao=on_editar), self.tela.criar_botao('Excluir', funcao=on_excluir)],
-                            alignment=ft.MainAxisAlignment.CENTER, spacing=5, expand=True)
-                )
-            ])
+                    # Cabeçalho
+                    ft.Container(
+                        bgcolor=self.tela.cor_cartao_2, padding=ft.padding.all(6), alignment=ft.alignment.center,
+                        content=ft.Text(nome_plano, color=ft.Colors.WHITE, size=14, weight=ft.FontWeight.BOLD),
+                    ),
+                    # Informações
+                    ft.Container(
+                        bgcolor=self.tela.cor_cartao_1, border_radius=4, padding=ft.padding.all(8),
+                        content=ft.Column([
+                                linha("VALOR:", f"R$ {valor}"),
+                                linha("INTERNET:", f"{dados_internet} GB"),
+                                linha("RECARGA:", f"R$ {valor_recarga}"),
+                                linha("LIGAÇÕES:", str(max_ligacoes)),
+                                linha("MENSAGENS:", str(max_mensagens)),
+                                linha("USUÁRIOS:", str(clientes_usuarios)),
+                            ], spacing=10
+                        )
+                    ),
+                    # Botões
+                    ft.Row([
+                            self.tela.criar_botao("Editar", funcao=on_editar),
+                            self.tela.criar_botao("Excluir", funcao=on_excluir),
+                        ], alignment=ft.MainAxisAlignment.CENTER, spacing=8
+                    )
+                ], spacing=10
+            )
         )
     
     def editar_plano(self, e = None) -> None:

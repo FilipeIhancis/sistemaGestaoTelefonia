@@ -73,7 +73,7 @@ class TelaAdministrador(TelaUsuario):
 
         # Lista de botões do menu lateral
         botoes_menu = [("Clientes", ft.Icons.GROUPS), ("Solicitações", ft.Icons.CHECKLIST), ("Planos", ft.Icons.LIST_ALT),
-                    ("Cadastrar cliente", ft.Icons.GROUP_ADD), ("Cadastrar número", ft.Icons.PHONE), ("---DIVISOR---", None), ("Sair", ft.Icons.EXIT_TO_APP)]
+                    ("Cadastrar cliente", ft.Icons.GROUP_ADD), ("Cadastrar número", ft.Icons.PHONE), ("---DIVISOR---", None), ("Sair", ft.Icons.LOGOUT)]
         
 
         # Criando os botões do menu

@@ -45,13 +45,14 @@ class TelaUsuario(TelaBase, ABC):
             threading.Timer(0.2, lambda: self.pagina_principal()).start()
 
         alerta_dialogo = ft.AlertDialog(
-            modal = True, title = ft.Text("Confirme a ação"),
-            content = ft.Text("Deseja sair?"),
+            modal = True, title = ft.Row([ft.Icon(ft.Icons.LOGOUT), ft.Text("Confirme a ação")], spacing=15),
+            content = ft.Text("Deseja sair do aplicativo? (Logout)"),
             actions = [
                 ft.TextButton("Sair", on_click = confirmar_saida),
                 ft.TextButton("Cancelar", on_click = cancelar_saida)
             ],
             actions_alignment = ft.MainAxisAlignment.END,
+            bgcolor=self.cor_dialogo
         )
         self.page.dialog = alerta_dialogo
         self.page.open(alerta_dialogo)

@@ -1,4 +1,5 @@
 import flet as ft
+import re
 
 class TelaBase():
 
@@ -12,6 +13,7 @@ class TelaBase():
         self.__cor_cartao_1 : str = ''
         self.__cor_cartao_2 : str = ''
         self.__cor_cartao_3 : str = ''
+        self.__cor_dialogo : str = ''
         self.definir_cor_azul()
 
     @property
@@ -58,8 +60,8 @@ class TelaBase():
     
     @cor_botao.setter
     def cor_botao(self, cor : str):
-        if not isinstance(cor, str):
-            raise Value("Cor inválida")
+        if not self.validar_cor(cor):
+            raise ValueError
         self.__cor_botao = cor
     
     @property
@@ -68,8 +70,8 @@ class TelaBase():
     
     @cor_cartao_1.setter
     def cor_cartao_1(self, cor : str):
-        if not isinstance(cor, str):
-            raise ValueError("Cor inválida")
+        if not self.validar_cor(cor):
+            raise ValueError
         self.__cor_cartao_1 = cor
     
     @property
@@ -78,8 +80,8 @@ class TelaBase():
     
     @cor_cartao_2.setter
     def cor_cartao_2(self, cor : str):
-        if not isinstance(cor, str):
-            raise ValueError("Cor inválida")
+        if not self.validar_cor(cor):
+            raise ValueError
         self.__cor_cartao_2 = cor
     
     @property
@@ -88,8 +90,8 @@ class TelaBase():
     
     @cor_cartao_3.setter
     def cor_cartao_3(self, cor : str):
-        if not isinstance(cor, str):
-            raise ValueError("Cor inválida")
+        if not self.validar_cor(cor):
+            raise ValueError
         self.__cor_cartao_3 = cor
     
     @property
@@ -98,9 +100,34 @@ class TelaBase():
     
     @cor_barra_progresso.setter
     def cor_barra_progresso(self, cor : str):
-        if not isinstance(cor, str):
-            raise ValueError("Cor inválida")
+        if not self.validar_cor(cor):
+            raise ValueError
         self.__cor_barra_progresso = cor
+
+    @property
+    def cor_dialogo(self):
+        return self.__cor_dialogo
+    
+    @cor_dialogo.setter
+    def cor_dialogo(self, cor):
+        if not self.validar_cor(cor):
+            raise ValueError
+        self.__cor_dialogo = cor
+
+    def validar_cor(self, cor : str = '') -> bool :
+        if not isinstance(cor, str):
+            return False
+        return bool(re.match(r'^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', cor))
+
+
+    def validar_email(self, e = None) -> bool :
+        return True
+    
+    def validar_senha(self, e = None) -> bool:
+        return False
+    
+    def validar_cpf(self, e = None) -> bool:
+        return True
 
     
     def iniciar(self, pagina_inicio : None):
@@ -129,39 +156,53 @@ class TelaBase():
                 style = ft.ButtonStyle(shape = ft.RoundedRectangleBorder(radius=4), side=ft.BorderSide(1))))
         
 
-    def textField(self, tamanho : int = 100, prefixo : str = None, inteiro:bool = False, flutuante:bool = False, altura : int = 35) -> ft.TextField:
+    def textField(self, tamanho : int = 100, prefixo : str = None, inteiro:bool = False, flutuante:bool = False, texto:bool=False, altura : int = 35) -> ft.TextField:
 
-        def validar_input(e):
-
-            texto = e.control.value
+        def validar_input(e : ft.ControlEvent = None) -> None:
+            
+            valor = e.control.value or ""
             novo_texto = ""
 
+            # Se não tem texto, não faz nada
+            if not valor:
+                return
+
             if inteiro:
-                # Permite apenas dígitos (1 a 9...) e não permite zero como primeiro dígito
-                novo_texto = ''.join([c for c in texto if c.isdigit()])
-                # Remove zeros à esquerda
-                if novo_texto.startswith("0"):
-                    novo_texto = novo_texto.lstrip("0")
-                # Se for vazio depois da limpeza, zera
-                if novo_texto == "":
-                    novo_texto = ""
+                # Remove tudo que não for dígito
+                novo_texto = ''.join(c for c in valor if c.isdigit())
+                # Permite "0" no começo, se quiser remover zeros à esquerda use:
+                # novo_texto = novo_texto.lstrip("0") or "0"
+
             elif flutuante:
                 ponto_encontrado = False
-                for i, c in enumerate(texto):
+                for i, c in enumerate(valor):
                     if c.isdigit():
                         novo_texto += c
-                    elif c == "." and not ponto_encontrado and i != 0:
+                    elif c == "." and not ponto_encontrado:
+                        # permite ponto no início (ex: ".5")
                         novo_texto += c
                         ponto_encontrado = True
+                    # ignora outros caracteres
+
+            else:
+                # Se não for nem inteiro nem float, não modifica (ou implemente outro tipo de validação)
+                return
 
             # Atualiza o campo só se o texto tiver sido modificado
             if texto != novo_texto:
                 e.control.value = novo_texto
                 self.page.update()
 
-        return ft.TextField(width=tamanho, prefix_text=prefixo, text_size = 12, on_change=validar_input,
-                            border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE, height = altura,
-                            text_align=ft.TextAlign.LEFT, content_padding=ft.padding.symmetric(horizontal=8, vertical=8))
+        return ft.TextField(
+            width=tamanho,
+            prefix_text=prefixo,
+            text_size = 12,
+            on_change=validar_input,
+            border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE,
+            height = altura,
+            text_align=ft.TextAlign.LEFT,
+            content_padding=ft.padding.symmetric(horizontal=8, vertical=8)
+        )
     
 
     def dropdown(self, texto : str = '', listaOpcoes : list = [], tamanho : int = 250, funcao = None) -> ft.Dropdown:
@@ -188,3 +229,4 @@ class TelaBase():
         self.cor_botao = "#372D6D"
         self.cor_cartao_1 = "#1D1420"
         self.cor_cartao_2 = "#272244"
+        self.cor_dialogo = "#1A1929"
