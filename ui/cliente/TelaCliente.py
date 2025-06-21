@@ -3,12 +3,13 @@ from ui.base.TelaUsuario import TelaUsuario
 from ui.cliente.PaginaFaturas import PaginaFaturas
 from ui.cliente.PaginaNumeros import PaginaNumeros
 from ui.cliente.PaginaAdicionarNumero import PaginaAdicionarNumero
+from models.cliente import Cliente
 
 class TelaCliente(TelaUsuario):
 
-    def __init__(self, page : ft.Page, login_callback):
+    def __init__(self, page : ft.Page, login_callback, usuario : Cliente):
 
-        super().__init__(page = page, login_callback = login_callback)
+        super().__init__(page = page, login_callback = login_callback, usuario=usuario)
         self.__menu_lateral = ft.Column(spacing = 5, expand = False)
         self.numeros_fake = ['(31) 91234-5678', '(31) 99876-5432', '(31) 93456-7890']
         self.planos_fake = []
@@ -25,6 +26,7 @@ class TelaCliente(TelaUsuario):
         self.__numeros = PaginaNumeros(self)
         self.__adicionar_numero = PaginaAdicionarNumero(self)
 
+    
     @property
     def adicionar_numero(self):
         return self.__adicionar_numero

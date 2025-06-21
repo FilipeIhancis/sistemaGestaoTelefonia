@@ -1,16 +1,28 @@
 import flet as ft
 from ui.base.TelaBase import TelaBase
 from ui.base.PaginaEditarDados import PaginaEditarDados
+from models.usuario import Usuario
 from abc import ABC, abstractmethod
 import threading
 
 
 class TelaUsuario(TelaBase, ABC):
 
-    def __init__(self, page : ft.Page, login_callback, *args, **kwargs):
+    def __init__(self, page : ft.Page, login_callback, usuario : Usuario, *args, **kwargs):
         super().__init__( page = page , *args, **kwargs )
         self._login_callback = login_callback
         self._editar_dados = PaginaEditarDados(self)
+        self.usuario = usuario
+
+    @property
+    def usuario(self) -> Usuario:
+        return self._usuario
+    
+    @usuario.setter
+    def usuario(self, novo_usuario : Usuario):
+        if not isinstance(novo_usuario, Usuario):
+            raise ValueError("objeto usuário inválido")
+        self._usuario = novo_usuario
 
     @property
     def login_callback(self):
@@ -39,6 +51,7 @@ class TelaUsuario(TelaBase, ABC):
     @abstractmethod
     def paginas_menu_lateral(self, e : ft.ControlEvent) -> None:
         pass
+
 
     def sair(self) -> None:
 

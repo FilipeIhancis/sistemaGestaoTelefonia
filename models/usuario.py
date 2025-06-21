@@ -2,12 +2,13 @@ from datetime import datetime
 
 class Usuario:
 
-    def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime):
+    def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, tipo : str = ''):
         self.nome = nome
         self.cpf = cpf
         self.email = email
         self.senha = senha
         self.data_registro = data_registro
+        self.tipo = tipo.upper()
 
     @property
     def cpf(self):
@@ -21,13 +22,13 @@ class Usuario:
 
     @property
     def senha(self):
-        return self.__senha
+        return self._senha
     
     @senha.setter
     def senha(self, nova_senha : str):
         if not isinstance(nova_senha, str) or nova_senha == '' or nova_senha == ' ':
             raise ValueError
-        self.__senha = nova_senha
+        self._senha = nova_senha
 
     @property
     def data_registro(self):
@@ -41,13 +42,13 @@ class Usuario:
 
     @property
     def email(self):
-        return self.__email
+        return self._email
     
     @email.setter
     def email(self, novo_email : str):
         if not isinstance(novo_email, str):
             raise ValueError
-        self.__email = novo_email
+        self._email = novo_email
 
 
     def cpf_valido(self, cpf : str = '') -> bool:

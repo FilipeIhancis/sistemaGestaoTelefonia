@@ -10,11 +10,14 @@ senha_cadastrada = "12345"
 
 class Tela(TelaBase):
 
+
     def __init__(self):
         super().__init__(None)
 
+
     def iniciar(self):
         super().iniciar(self.pagina_login)
+
 
     def pagina_login(self, page: ft.Page) -> None:
 
@@ -46,11 +49,19 @@ class Tela(TelaBase):
             self.page.update()
 
         def logar(e = None):
+
             if (self.validar_credenciais(email = email.value, senha = senha.value)):
-                if email.value == "filipe@gmail.com":
-                    TelaCliente(self.page, self.pagina_login).pagina_principal()
-                elif email.value == "admin":
-                    TelaAdministrador(self.page, self.pagina_login).pagina_principal()
+
+                usuario = self.bd.usuarios.buscar_usuario(email.value, senha.value)
+
+                if usuario.tipo == 'CLIENTE':
+                    tela_cliente = TelaCliente(self.page, self.pagina_login, usuario)
+                    tela_cliente.pagina_principal()
+                elif usuario.tipo == 'ADMINISTRADOR':
+                    tela_adm = TelaAdministrador(self.page, self.pagina_login, usuario)
+                    tela_adm.pagina_principal()
+                else:
+                    raise ValueError("Tipo inválido")
             else:
                 mensagem_erro.visible = True
                 self.page.update()
@@ -72,8 +83,6 @@ class Tela(TelaBase):
                 alignment=ft.MainAxisAlignment.CENTER )
         )
 
+
     def validar_credenciais(self, e = None, email : str = '', senha : str = '') -> bool:
-        if email in email_cadastrado and senha == senha_cadastrada:
-            return True
-        else:
-            return False
+        return self.bd.usuarios.login(email, senha)

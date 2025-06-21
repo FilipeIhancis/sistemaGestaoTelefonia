@@ -5,7 +5,7 @@ from datetime import datetime
 class Cliente(Usuario):
 
     def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, numeros : list[Numero]):
-        super().__init__(nome, cpf, email, senha, data_registro)
+        super().__init__(nome, cpf, email, senha, data_registro, 'cliente')
         self.numeros = numeros
 
     

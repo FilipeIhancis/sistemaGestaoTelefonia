@@ -1,4 +1,5 @@
 import flet as ft
+from database.GerenciadorBanco import GerenciadorBanco
 import re
 
 class TelaBase():
@@ -15,6 +16,9 @@ class TelaBase():
         self.__cor_cartao_3 : str = ''
         self.__cor_dialogo : str = ''
         self.definir_cor_azul()
+
+        self.bd = GerenciadorBanco('database/exemplo.db')
+
 
     @property
     def app(self):

@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Administrador(Usuario):
     def __init__(self, id: str, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, banco):
-        super().__init__(nome, cpf, email, senha, data_registro)
+        super().__init__(nome, cpf, email, senha, data_registro, 'administrador')
         self.id = id
         self.banco = banco
         self.solicitacoes = []  # [BANCO] No futuro: buscar solicitações pendentes atribuídas a este administrador
