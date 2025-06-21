@@ -1,14 +1,13 @@
 from datetime import datetime
-from numero import Numero
 
 class Mensagem:
 
-    def __init__(self, conteudo: str = '', origem: Numero = None, destino: str = '', data_envio: datetime = None):
+    def __init__(self, conteudo: str = '', origem: str = '', destino: str = '', data_envio: datetime = None):
 
-        self.__conteudo = conteudo
-        self.__origem = origem                # Objeto Numero
-        self.__destino = destino              # Número de destino como string
-        self.__data_envio = data_envio
+        self.conteudo = conteudo
+        self.origem = origem                # Objeto Numero
+        self.destino = destino              # Número de destino como string
+        self.data_envio = data_envio
 
     @property
     def conteudo(self):
@@ -25,8 +24,8 @@ class Mensagem:
         return self.__origem
     
     @origem.setter
-    def origem(self, numero_origem : Numero):
-        if not isinstance(numero_origem, Numero):
+    def origem(self, numero_origem : str):
+        if not isinstance(numero_origem, str):
             raise ValueError
         self.__origem = numero_origem
 

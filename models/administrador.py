@@ -1,16 +1,16 @@
-from solicitacao import Solicitacao
-from usuario import Usuario
-from cliente import Cliente
-from database.BancoDeDados import BancoDeDados
+from .solicitacao import Solicitacao
+from .usuario import Usuario
+from .cliente import Cliente
 from datetime import datetime
 
 class Administrador(Usuario):
-    def __init__(self, id: str, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, banco: BancoDeDados):
+    def __init__(self, id: str, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, banco):
         super().__init__(nome, cpf, email, senha, data_registro)
         self.id = id
         self.banco = banco
         self.solicitacoes = []  # [BANCO] No futuro: buscar solicitações pendentes atribuídas a este administrador
 
+'''
     def listar_clientes(self) -> list[Cliente]:
         return self.banco.get_clientes()  # [BANCO] Criar método que retorna lista de objetos Cliente (consultando USUARIO onde tipo='CLIENTE')
 
@@ -22,3 +22,4 @@ class Administrador(Usuario):
 
     def adicionar_numero_cliente(self, cliente: Cliente, numero: str, id_assinatura: int) -> None:
         self.banco.adicionar_numero(numero, cliente.cpf, id_assinatura)  # [BANCO] Já existe método de adicionar número
+'''

@@ -3,6 +3,8 @@
 import sqlite3
 from datetime import datetime
 
+from models import *
+
 
 class BancoDeDados():
 
@@ -54,6 +56,7 @@ class BancoDeDados():
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS PLANOS (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
                 dados_mb INTEGER,
                 preco REAL,
                 maximo_mensagens INTEGER,
@@ -63,25 +66,24 @@ class BancoDeDados():
                 pacote_minutos_unitario REAL
             );
         """)
-
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS ASSINATURAS (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                plano INTEGER,
-                data_assinatura TEXT,
+                id_plano INTEGER NOT NULL,
+                data_assinatura TEXT NOT NULL,
                 ativa TEXT CHECK(ativa IN ('True', 'False')),
-                FOREIGN KEY(plano) REFERENCES PLANOS(id_plano)
+                FOREIGN KEY(id_plano) REFERENCES PLANOS(id)
             );
         """)
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS NUMEROS_TELEFONE (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                numero TEXT PRIMARY KEY,
+                numero TEXT NOT NULL,
                 saldo REAL,
                 cpf_cliente TEXT,
                 id_assinatura INTEGER,
                 FOREIGN KEY(cpf_cliente) REFERENCES USUARIO(cpf),
-                FOREIGN KEY(id_assinatura) REFERENCES ASSINATURAS(id_assinatura)
+                FOREIGN KEY(id_assinatura) REFERENCES ASSINATURAS(id)
             );
         """)
         self.cursor.execute("""
@@ -106,12 +108,48 @@ class BancoDeDados():
                 cpf_cliente TEXT NOT NULL,
                 assunto TEXT NOT NULL,
                 categoria TEXT NOT NULL,
-                FOREIGN KEY (cpf_cliente) REFERENCES USUARIO(cpf_cliente)
+                FOREIGN KEY (cpf_cliente) REFERENCES USUARIO(cpf)
+            );
+        """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS MENSAGENS (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origem TEXT NOT NULL,
+                destino TEXT NOT NULL,
+                data_envio TEXT NOT NULL,
+                conteudo TEXT NOT NULL,
+                FOREIGN KEY (origem) REFERENCES NUMEROS_TELEFONE(numero),
+                FOREIGN KEY (destino) REFERENCES NUMEROS_TELEFONE(numero)       
+            );
+        """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS LIGACOES (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origem TEXT NOT NULL,
+                destino TEXT NOT NULL,
+                data_inicio TEXT NOT NULL,
+                data_fim TEXT NOT NULL,
+                duracao INTEGER,
+                FOREIGN KEY (origem) REFERENCES NUMEROS_TELEFONE(numero),
+                FOREIGN KEY (destino) REFERENCES NUMEROS_TELEFONE(numero)
             );
         """)
 
         self.conn.commit()
 
+    
+    def salvar_numero(self, cliente: Cliente, numero : Numero) -> None:
+
+        self.cursor.execute(
+            """
+                INSERT INTO NUMEROS_TELEFONE (numero, saldo, cpf_cliente, id_assinatura)
+                VALUES (?, ?, ?, ?)
+            """ ,
+            (numero.numero, numero.saldo, cliente.cpf, None)
+        )
+        self.conn.commit()
+
+'''
 
     def listar_tabelas(self):
         print(f"\nTABELAS DO BANCO DE DADOS: ")
@@ -185,8 +223,10 @@ class BancoDeDados():
     def email_existe(self, email: str) -> bool:
         self.cursor.execute("SELECT 1 FROM USUARIO WHERE email = ?", (email,))
         return self.cursor.fetchone() is not None
+    
 
     def alterar_dados_cliente(self, cpf: str, novo_nome=None, novo_email=None, nova_senha=None) -> None:
+
         if not self.cpf_existe(cpf):
             print("CPF não encontrado.")
             return
@@ -217,6 +257,7 @@ class BancoDeDados():
         self.cursor.execute(sql, tuple(valores))
         self.conn.commit()
         print("Dados do cliente atualizados com sucesso.")
+
 
     def alterar_numero(self, numero : str, novo_cpf = None, nova_id_assinatura = None):
 
@@ -298,9 +339,10 @@ class BancoDeDados():
             #return self.cursor.lastrowid  # Retorna ID da assinatura inserida
         except sqlite3.IntegrityError as e:
             print(f"[ERRO ASSINATURA] {e}")
+'''
 
 
-
+'''
 def criar_banco_manualmente():
 
     # CRIA BANCO DE DADOS
@@ -343,3 +385,4 @@ bd.listar_usuarios_clientes()
 
 print(f"\nO email filipe@gmail.com existe? {bd.email_existe('filipe@gmail.com')}")
 print(f"O email filipeihancis@gmail.com existe? {bd.email_existe('filipeihancis@gmail.com')}")
+'''

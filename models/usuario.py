@@ -1,13 +1,13 @@
 from datetime import datetime
 
 class Usuario:
-    def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime):
 
+    def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime):
         self.nome = nome
-        self.__cpf = cpf
-        self.__email = email
-        self.__senha = senha
-        self.__data_registro = data_registro
+        self.cpf = cpf
+        self.email = email
+        self.senha = senha
+        self.data_registro = data_registro
 
     @property
     def cpf(self):
@@ -33,7 +33,7 @@ class Usuario:
     def data_registro(self):
         return self.__data_registro
     
-    @property
+    @data_registro.setter
     def data_registro(self, data : datetime):
         if not isinstance(data, datetime):
             raise ValueError
@@ -54,24 +54,19 @@ class Usuario:
 
         cpf = ''.join(filter(str.isdigit, cpf))
 
-        # Confere se o CPF tem 11 dígitos
-        if len(cpf) != 11:
-            return False
-        if cpf == cpf[0] * 11:
+        # Confere se o CPF tem 11 dígitos e se não é uma sequência repetida
+        if len(cpf) != 11 or cpf == cpf[0] * 11:
             return False
 
-        # Validação do primeiro dígito
+        # Cálculo do primeiro dígito verificador
         soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
-        digito1 = (soma * 10) % 11
-        if digito1 == 10:
-            digito1 = 0
+        resto = soma % 11
+        digito1 = 0 if resto < 2 else 11 - resto
 
-        # Validação do segundo dígito
+        # Cálculo do segundo dígito verificador
         soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
-        digito2 = (soma * 10) % 11
+        resto = soma % 11
+        digito2 = 0 if resto < 2 else 11 - resto
 
-        if digito2 == 10:
-            digito2 = 0
-
+        # Retorno da validação final
         return cpf[-2:] == f"{digito1}{digito2}"
-    

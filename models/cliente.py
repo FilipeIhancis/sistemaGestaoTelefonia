@@ -1,15 +1,26 @@
-from usuario import Usuario
-from numero import Numero
-from database.BancoDeDados import BancoDeDados
+from .usuario import Usuario
+from .numero import Numero
 from datetime import datetime
 
 class Cliente(Usuario):
-    def __init__(self, id: str, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, banco: BancoDeDados):
-        super().__init__(nome, cpf, email, senha, data_registro)
-        self.id = id
-        self.banco = banco
-        self.numeros = self.banco.get_numeros_por_cliente(cpf)  # [BANCO] Criar método que retorne objetos Numero para o CPF informado
 
+    def __init__(self, nome: str, cpf: str, email: str, senha: str, data_registro: datetime, numeros : list[Numero]):
+        super().__init__(nome, cpf, email, senha, data_registro)
+        self.numeros = numeros
+
+    
+    @property
+    def numeros(self):
+        return self.__numeros
+    
+    @numeros.setter
+    def numeros(self, lista_numeros : list[Numero] = None):
+        for num in lista_numeros:
+            if not isinstance(num, Numero):
+                raise ValueError
+        self.__numeros = lista_numeros
+
+'''
     def visualizar_numeros(self) -> list[str]:
         return [numero.numero for numero in self.numeros]
 
@@ -39,3 +50,4 @@ class Cliente(Usuario):
                     "data_envio": msg.data_envio
                 })
         return resultado
+'''

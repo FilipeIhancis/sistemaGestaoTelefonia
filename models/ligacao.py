@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
-from numero import Numero
+
 
 class Ligacao:
 
-    def __init__(self, origem : str = '', destino: Numero = None, data_inicio: datetime = None, data_fim: datetime = None):
-        self.__origem = origem 
-        self.__destino = destino 
-        self.__data_inicio = data_inicio
-        self.__data_fim = data_fim
-        self.__duracao = self.__data_inicio - self.__data_fim
+    def __init__(self, origem : str = '', destino: str = '', data_inicio: datetime = None, data_fim: datetime = None):
+
+        self.origem = origem 
+        self.destino = destino 
+        self.data_inicio = data_inicio
+        self.data_fim = data_fim
+        self.duracao = (self.data_inicio - self.data_fim).total_seconds()
 
     @property
     def origem(self):
@@ -25,8 +26,8 @@ class Ligacao:
         return self.__destino
 
     @destino.setter
-    def destino(self, dest : Numero):
-        if not isinstance(dest, Numero):
+    def destino(self, dest : str):
+        if not isinstance(dest, str):
             raise ValueError
         self.__destino = dest
 
