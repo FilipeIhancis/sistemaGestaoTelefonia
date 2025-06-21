@@ -119,7 +119,6 @@ class TelaBase():
             return False
         return bool(re.match(r'^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', cor))
 
-
     def validar_email(self, e = None) -> bool :
         return True
     
@@ -158,48 +157,41 @@ class TelaBase():
 
     def textField(self, tamanho : int = 100, prefixo : str = None, inteiro:bool = False, flutuante:bool = False, texto:bool=False, altura : int = 35) -> ft.TextField:
 
-        def validar_input(e : ft.ControlEvent = None) -> None:
-            
+        def validar_input(e: ft.ControlEvent = None) -> None:
+
+            # Obtém informações do textfield
             valor = e.control.value or ""
-            novo_texto = ""
+            novo_texto = valor
 
-            # Se não tem texto, não faz nada
-            if not valor:
-                return
-
+            # Verifica qual é o tipo de entrada do textfield
             if inteiro:
-                # Remove tudo que não for dígito
                 novo_texto = ''.join(c for c in valor if c.isdigit())
-                # Permite "0" no começo, se quiser remover zeros à esquerda use:
-                # novo_texto = novo_texto.lstrip("0") or "0"
-
             elif flutuante:
+                novo_texto = ""
                 ponto_encontrado = False
-                for i, c in enumerate(valor):
+                for c in valor:
                     if c.isdigit():
                         novo_texto += c
                     elif c == "." and not ponto_encontrado:
-                        # permite ponto no início (ex: ".5")
                         novo_texto += c
                         ponto_encontrado = True
-                    # ignora outros caracteres
-
-            else:
-                # Se não for nem inteiro nem float, não modifica (ou implemente outro tipo de validação)
+                    # ignora tudo que não for dígito ou o primeiro ponto
+            elif texto:
+                # Texto livre, não filtra nada
                 return
-
-            # Atualiza o campo só se o texto tiver sido modificado
-            if texto != novo_texto:
+            # Se o valor foi alterado, atualiza o campo
+            if novo_texto != valor:
                 e.control.value = novo_texto
-                self.page.update()
+                e.control.update()
 
         return ft.TextField(
             width=tamanho,
             prefix_text=prefixo,
-            text_size = 12,
-            on_change=validar_input,
-            border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE,
-            height = altura,
+            text_size=12,
+            on_change=validar_input if (inteiro or flutuante) else None,
+            border_color=ft.Colors.WHITE,
+            focused_border_color=ft.Colors.WHITE,
+            height=altura,
             text_align=ft.TextAlign.LEFT,
             content_padding=ft.padding.symmetric(horizontal=8, vertical=8)
         )

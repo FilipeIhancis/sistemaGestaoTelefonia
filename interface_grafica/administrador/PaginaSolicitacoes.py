@@ -4,7 +4,7 @@ from interface_grafica.base.SubTela import SubTela
 class PaginaSolicitacoes(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela_admin)
         self.__tela = tela_admin
 
     def pagina_solicitacoes(self) -> None:

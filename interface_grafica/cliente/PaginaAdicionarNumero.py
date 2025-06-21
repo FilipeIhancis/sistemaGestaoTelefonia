@@ -5,7 +5,7 @@ from interface_grafica.base.SubTela import SubTela
 class PaginaAdicionarNumero(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
 
 
     def pagina_adicionar_numero(self) -> None:

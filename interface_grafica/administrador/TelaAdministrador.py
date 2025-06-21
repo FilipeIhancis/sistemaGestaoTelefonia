@@ -65,6 +65,95 @@ class TelaAdministrador(TelaUsuario):
             raise ValueError("")
         self.__faturas = inst
 
+    
+    def confirmar_identidade(self, e : ft.ControlEvent = None, titulo : str = 'Confirmar', ao_confirmar : callable = None, ao_cancelar : callable = None):
+
+        dialogo = None
+        senha = self.textField(tamanho=130, texto=True)
+        confirmar_senha = self.textField(tamanho=130, texto=True)
+        senha.password = True
+        confirmar_senha.password = True
+
+        confirmar = ft.TextButton("Confirmar", disabled=True)
+        mensagem_erro = ft.Text('Senha incorreta! Tente novamente.', color=ft.Colors.RED, visible=False)
+
+        def verificar_campos(e = None):
+            nonlocal senha
+            nonlocal confirmar_senha
+            nonlocal confirmar
+            confirmar.disabled = not (senha.value and confirmar_senha.value)
+            self.page.update()
+
+        def fechar_dialogo(e=None):
+            nonlocal dialogo
+            self.page.close(dialogo)
+            self.page.update()
+
+        def confirmar_acao(e=None):
+            # lógica para confirmar a senha mesmo (IF ->>> cancelar_acao)
+            fechar_dialogo()
+            if ao_confirmar:
+                ao_confirmar()
+
+        def cancelar_acao(e=None):
+            fechar_dialogo()
+            if ao_cancelar:
+                ao_cancelar()
+
+        senha.on_change = verificar_campos
+        confirmar_senha.on_change = verificar_campos
+
+        # Define o que o botão "Solicitar" vai fazer
+        confirmar.on_click = confirmar_acao
+
+        # Cria a caixa de diálogo padrão
+        dialogo = ft.AlertDialog(
+            modal=True, title=ft.Text(titulo, weight=ft.FontWeight.BOLD), bgcolor=self.cor_dialogo,
+            content=ft.Container(width=400, height=170, padding=20,
+                content= ft.Column([
+                    ft.Text("Essa ação requer confirmação de identidade."),
+                    ft.Row([ft.Text("Senha"), senha], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    ft.Row([ft.Text("Confirme sua senha"), confirmar_senha], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                ], spacing=15)
+            ),
+            actions=[confirmar, ft.TextButton("Cancelar", on_click=cancelar_acao)]
+        )
+        self.page.dialog = dialogo
+        self.page.open(dialogo)
+        self.page.update()
+
+    
+    def confirmar(self, aviso : str = '', ao_confirmar : callable = None, ao_cancelar : callable = None) -> bool:
+
+        dialogo = None
+
+        def fechar_dialogo(e = None):
+            nonlocal dialogo
+            self.page.close(dialogo)
+            self.page.update()
+
+        def confirmar_acao(e=None):
+            fechar_dialogo()
+            if ao_confirmar:
+                ao_confirmar()
+
+        def cancelar_acao(e=None):
+            fechar_dialogo()
+            if ao_cancelar:
+                ao_cancelar
+
+        sim = ft.TextButton("Sim", on_click = confirmar_acao)
+        nao = ft.TextButton("Não", on_click = cancelar_acao)
+
+        dialogo = ft.AlertDialog(
+            modal=True, title=ft.Text("Confirmar Ação", weight=ft.FontWeight.BOLD), bgcolor=self.cor_dialogo,
+            content=ft.Container(width=250, height=70, padding=20, content=ft.Column([ft.Text(aviso)])),
+            actions=[sim, nao]
+        )
+        self.page.dialog = dialogo
+        self.page.open(dialogo)
+        self.page.update()
+
 
     def pagina_principal(self) -> None:
         
@@ -191,57 +280,62 @@ class TelaAdministrador(TelaUsuario):
         cpfs = ['XXX.XXX.XXX-XX', 'YYY.YYY.YYY-YY', 'ZZZ.ZZZ.ZZZ-ZZ']
         planos = ['PLANO 1', 'PLANO 2', 'PLANO 3']
 
-        novo_proprieatorio = ft.Dropdown(label="Cpf", options=[ft.dropdown.Option(cpf) for cpf in cpfs], label_style=ft.TextStyle(size=9),
-                                        on_change = on_change_novo_proprieatario, enable_search = True, width=180, text_style=ft.TextStyle(size=9))
-        novo_plano = ft.Dropdown(label="Plano", options=[ft.dropdown.Option(plano) for plano in planos], label_style=ft.TextStyle(size=9),
-                                 on_change = on_change_novo_plano, enable_search = True, width=180, text_style=ft.TextStyle(size=10))
+        novo_proprieatorio = self.dropdown(tamanho=220, listaOpcoes=cpfs)
+        novo_proprieatorio.on_change = on_change_novo_proprieatario
+        novo_proprieatorio.label = "CPF"
+        novo_plano = self.dropdown(tamanho=220, listaOpcoes=planos)
+        novo_plano.on_change = on_change_novo_plano
+        novo_plano.label = "PLANO"
+
         
-        campo2 = ft.Container( border = ft.border.all(1), border_radius = 6, padding = 10, expand=True,
+        campo2 = ft.Container( height=250,border = ft.border.all(1), border_radius = 6, padding = 20, expand=True,
             content=ft.Column([
-            ft.Row( [ft.Icon(ft.Icons.MANAGE_ACCOUNTS), ft.Text("Gerenciamento do número", weight=ft.FontWeight.BOLD, size=16)],spacing=10),
+            ft.Row( [ft.Icon(ft.Icons.MANAGE_ACCOUNTS), ft.Text("Gerenciamento do Número", weight=ft.FontWeight.BOLD, size=16)],spacing=10),
             ft.Divider(thickness=2),
-            ft.Row(controls=[
-                ft.Column(controls = [
-                    ft.Text("Trocar Proprietário:"), ft.Text("Trocar Plano:")
-                    ], alignment = ft.MainAxisAlignment.START),
-                ft.Column(controls = [
-                    ft.Container(content=novo_proprieatorio, padding=ft.padding.only(right=10), width=160),
-                    ft.Container(content=novo_plano, width=160)
-                    ], alignment = ft.MainAxisAlignment.START)
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                spacing=10,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            ),
+            ft.Column(controls=[    
+                ft.Row([ft.Text("Trocar Proprietário:"), novo_proprieatorio], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Row([ft.Text("Trocar Plano:"), novo_plano], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+            ]),
             # Linha dos dois botões no final
-            ft.Row( controls=[ self.criar_botao('Suspender número'), self.criar_botao('Cancelar número') ], alignment=ft.alignment.top_left, spacing=6)
+            ft.Row(controls=[
+                    self.criar_botao('Suspender número', cor=False,
+                                     funcao = lambda e: self.confirmar(aviso="O número será suspenso após análise.", ao_confirmar=self.suspender_numero)),
+                    self.criar_botao('Cancelar número', cor=False,
+                                     funcao= lambda e : self.confirmar_identidade(titulo='Cancelar número', ao_confirmar=self.cancelar_numero))
+                ], alignment=ft.alignment.top_left, spacing=6)
         ]))
 
-        campo1 = ft.Container( expand=True, border = ft.border.all(1), border_radius = 6, padding = 10, content=ft.Column([
+        def linha(texto1:str='', texto2:str='') -> ft.Row:
+            return ft.Row(
+                controls=[ft.Text(texto1, weight=ft.FontWeight.BOLD), ft.Text(texto2)], alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            )
+
+        campo1 = ft.Container(height=250, expand=True, border = ft.border.all(1), border_radius = 6, padding = 20, content=ft.Column([
             ft.Row([ft.Icon(ft.Icons.INFO), ft.Text("Informações Gerais", weight=ft.FontWeight.BOLD, size=16)],spacing=10),
             ft.Divider(thickness=2),
-            ft.Row( controls=[
-                    # Coluna da esquerda - os labels
-                    ft.Column([
-                        ft.Text("Número"), ft.Text("Proprietário (CPF)"), ft.Text("Plano associado"), ft.Text("Status"),
-                    ], alignment=ft.MainAxisAlignment.START, spacing=8),
-
-                    # Coluna da direita - os valores
-                    ft.Column([
-                        ft.Text("(31) XXXXX-XXXX"), ft.Text("XXX.XXX.XXX-XX"), ft.Text("Plano X"), ft.Text("Ativo"),
-                    ], alignment=ft.MainAxisAlignment.END, spacing=8),
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN, expand=True
-            )
+            ft.Column(spacing = 15, controls=[
+                        linha('Número', '(31) XXXXX-XXXX'),
+                        linha('Proprietário', 'XXX.XXX.XXX-XX'),
+                        linha('Plano Associado', 'Plano X'),
+                        linha('Status', 'Ativo')
+                    ])
         ]))
-
-        salvar = ft.ElevatedButton("Salvar", bgcolor = self.cor_botao, color = ft.Colors.WHITE,
-                                        style=ft.ButtonStyle( padding=ft.padding.symmetric(vertical=15, horizontal=15)))
-        cancelar = ft.ElevatedButton("Cancelar", bgcolor = self.cor_botao, color = ft.Colors.WHITE,
-                                        style=ft.ButtonStyle( padding=ft.padding.symmetric(vertical=15, horizontal=30)))
+        # Botões abaixo
+        salvar = self.criar_botao("Salvar")
+        cancelar = self.criar_botao("Cancelar", funcao=self.pagina_edicao_numero)
 
         self.atualizar_pagina(
             ft.Column(scroll = ft.ScrollMode.AUTO, controls=[
-                cabecalho, ft.Divider(thickness=2), ft.Row([campo1, campo2]), ft.Row([salvar, cancelar])]
+                cabecalho, ft.Divider(thickness=2), ft.Column([ft.Row([campo1, campo2]), ft.Row([salvar, cancelar])], spacing=25)]
             )
         )
+
+
+    def suspender_numero(self, e:ft.ControlEvent = None) -> None:
+        
+        print("Iá suspender o número")
+
+
+    def cancelar_numero(self, e:ft.ControlEvent = None) -> None:
+
+        print("Irá cancelar o número")

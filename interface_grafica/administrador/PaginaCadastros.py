@@ -4,7 +4,7 @@ from interface_grafica.base.SubTela import SubTela
 class PaginaCadastro(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
 
 
     def cadastrar_cliente(self, e : ft.ControlEvent = None):

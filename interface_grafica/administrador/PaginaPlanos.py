@@ -6,7 +6,7 @@ class PaginaPlanos(SubTela):
 
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
         self.cadastros = PaginaCadastro(tela_admin=tela_admin)
 
 

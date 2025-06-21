@@ -6,7 +6,7 @@ class PaginaEditarDados(SubTela):
 
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
 
 
     def pagina_editar_dados(self) -> None:
@@ -145,40 +145,3 @@ class PaginaEditarDados(SubTela):
         self.tela.page.dialog = dialogo
         self.tela.page.open(dialogo)
         self.tela.page.update()
-        
-
-
-    """"
-    def detalhes_plano(self, e = None):
-
-        info_plano = None 
-
-        def linha(texto1 : str = '', texto2: str = '') -> ft.Row:
-            return ft.Row(
-                [ft.Text(texto1, weight=ft.FontWeight.BOLD), ft.Text(texto2)],
-                alignment = ft.MainAxisAlignment.SPACE_BETWEEN
-            )
-
-        def fechar_info_plano(e = None):
-            nonlocal info_plano
-            self.tela.page.close(info_plano)
-            self.tela.page.update()
-
-        info_plano = ft.AlertDialog(
-            modal = True, title = ft.Text("Plano X", weight=ft.FontWeight.BOLD),
-            content=ft.Container(width=350, height=160, padding = 10, content = ft.Column([
-                linha('Valor', 'R$ ' + '59,90'),
-                linha('Dados de Internet', '1000' + ' MB'),
-                linha('Valor de recarga', 'R$ ' + '5,20'),
-                linha('Máximo de Ligações', '120'),
-                linha('Máximo de Mensagens', '150')
-            ])),
-            actions = [
-                ft.TextButton("Sair", on_click = fechar_info_plano)
-            ],
-            actions_alignment = ft.MainAxisAlignment.END,
-        )
-        self.tela.page.dialog = info_plano
-        self.tela.page.open(info_plano)
-        self.tela.page.update()
-        """

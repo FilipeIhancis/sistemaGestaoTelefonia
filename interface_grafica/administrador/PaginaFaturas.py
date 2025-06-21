@@ -4,7 +4,7 @@ from interface_grafica.base.SubTela import SubTela
 class PaginaFaturas(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
 
     def reenviar_fatura(self, e) -> None:
         print("Reenviando fatura clicada")

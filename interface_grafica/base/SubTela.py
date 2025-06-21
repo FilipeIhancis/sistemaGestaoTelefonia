@@ -2,15 +2,15 @@ from interface_grafica.base.TelaUsuario import TelaUsuario
 
 class SubTela():
 
-    def __init__(self, tela_admin : TelaUsuario):
-        self._tela = tela_admin
+    def __init__(self, tela : TelaUsuario):
+        self._tela = tela
 
     @property
     def tela(self):
         return self._tela
     
     @tela.setter
-    def tela(self, tela_admin):
-        if not isinstance(tela_admin, TelaUsuario):
+    def tela(self, tela):
+        if not isinstance(tela, TelaUsuario):
             raise ValueError("Erro: tela admin não é do tipo TelaUsuario")
-        self._tela = tela_admin
+        self._tela = tela

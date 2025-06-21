@@ -6,7 +6,7 @@ from interface_grafica.base.SubTela import SubTela
 class PaginaFaturas(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela_admin=tela_admin)
+        super().__init__(tela=tela_admin)
 
 
     def pagina_faturas(self) -> None:
@@ -42,11 +42,11 @@ class PaginaFaturas(SubTela):
 
         numero_dropdown = ft.Dropdown(
             label="Escolha um número", options=[ft.dropdown.Option(n) for n in self.tela.numeros_fake],
-            on_change = atualizar_fatura, ref=numero_selecionado, width=300,
+            on_change = atualizar_fatura, ref=numero_selecionado, width=300, border_width=1, border_color=ft.Colors.GREY
         )
         mes_dropdown = ft.Dropdown(
             label="Mês de Referência", options = [ft.dropdown.Option(m) for m in meses],
-            on_change = atualizar_fatura, ref = mes_selecionado, width=300,
+            on_change = atualizar_fatura, ref = mes_selecionado, width=300, border_width=1, border_color=ft.Colors.GREY
         )
 
         self.tela.atualizar_pagina(
