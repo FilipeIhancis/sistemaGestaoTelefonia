@@ -2,7 +2,6 @@ import flet as ft
 from interface_grafica.base.TelaUsuario import TelaUsuario
 from interface_grafica.cliente.PaginaFaturas import PaginaFaturas
 from interface_grafica.cliente.PaginaNumeros import PaginaNumeros
-from interface_grafica.cliente.PaginaEditarDados import PaginaEditarDados
 from interface_grafica.cliente.PaginaAdicionarNumero import PaginaAdicionarNumero
 
 class TelaCliente(TelaUsuario):
@@ -24,7 +23,6 @@ class TelaCliente(TelaUsuario):
         
         self.__faturas = PaginaFaturas(self)
         self.__numeros = PaginaNumeros(self)
-        self.__editar_dados = PaginaEditarDados(self)
         self.__adicionar_numero = PaginaAdicionarNumero(self)
 
     @property
@@ -36,16 +34,6 @@ class TelaCliente(TelaUsuario):
         if not isinstance(inst, PaginaAdicionarNumero):
             raise ValueError
         self.__adicionar_numero = inst
-
-    @property
-    def editar_dados(self):
-        return self.__editar_dados
-    
-    @editar_dados.setter
-    def editar_dados(self, inst):
-        if not isinstance(inst, PaginaEditarDados):
-            raise ValueError
-        self.__editar_dados = inst
 
     @property
     def faturas(self):

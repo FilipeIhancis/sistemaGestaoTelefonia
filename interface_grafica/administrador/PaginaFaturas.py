@@ -35,16 +35,13 @@ class PaginaFaturas(SubTela):
         vencimento = fatura[4]
         geracao = fatura[5]
 
-        def botao(texto : str, funcao, icone : ft.Icon):
-            return ft.ElevatedButton(text = texto, bgcolor=self.tela.cor_botao, color=ft.Colors.WHITE, on_click = funcao, icon = icone)
-
         return ft.Container(
             padding = 10, border = ft.border.all(1), border_radius = 6,
             content = ft.Column([
                     ft.Text("FATURA", weight = ft.FontWeight.BOLD, size = 18) ,
                     ft.Row([
                         ft.Column([
-                                ft.Text(f"Número associado: ({numero})", weight=ft.FontWeight.BOLD),
+                                ft.Text(f"Número associado: {numero}"),
                                 ft.Text(f"Período: {periodo}"),
                                 ft.Text(f"Valor: R$ {valor:.2f}"),
                             ], alignment=ft.MainAxisAlignment.START, spacing=5,),
@@ -55,13 +52,13 @@ class PaginaFaturas(SubTela):
                             ], alignment=ft.MainAxisAlignment.START, spacing=5,)
                     ], alignment = ft.MainAxisAlignment.SPACE_BETWEEN, spacing = 20, vertical_alignment=ft.CrossAxisAlignment.START
                     ),
-                    ft.Row([botao("Reenviar Cobrança", self.reenviar_fatura, ft.Icons.SEND),
-                            botao("Visualizar Detalhes", self.ver_detalhes_fatura, ft.Icons.EXPAND_MORE),
-                            botao("Suspender Número", self.suspender_numero, ft.Icons.CANCEL)
+                    ft.Row([self.tela.criar_botao("Reenviar cobrança", icone=ft.Icons.SEND, funcao=self.reenviar_fatura, cor = False),
+                            self.tela.criar_botao("Visualizar Detalhes", funcao=self.ver_detalhes_fatura, icone=ft.Icons.EXPAND_MORE, cor=False),
+                            self.tela.criar_botao("Suspender Número",
+                                        funcao= lambda e : self.tela.confirmar(aviso="O número será suspenso após análise.",
+                                                                               ao_confirmar=self.tela.clientes.suspender_numero),
+                                        icone=ft.Icons.CANCEL, cor=False)
                     ], spacing=10, alignment=ft.MainAxisAlignment.START),
                 ], spacing = 10,
             )
         )
-    
-    def suspender_numero(self, e) -> None:
-        print("Suspender número da fatura clicada")

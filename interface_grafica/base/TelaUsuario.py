@@ -1,5 +1,6 @@
 import flet as ft
 from interface_grafica.base.TelaBase import TelaBase
+from interface_grafica.base.PaginaEditarDados import PaginaEditarDados
 from abc import ABC, abstractmethod
 import threading
 
@@ -9,6 +10,7 @@ class TelaUsuario(TelaBase, ABC):
     def __init__(self, page : ft.Page, login_callback, *args, **kwargs):
         super().__init__( page = page , *args, **kwargs )
         self._login_callback = login_callback
+        self._editar_dados = PaginaEditarDados(self)
 
     @property
     def login_callback(self):
@@ -19,6 +21,16 @@ class TelaUsuario(TelaBase, ABC):
         if not callable(login):
             raise ValueError("Tela de Login inválida: precisa ser função")
         self._login_callback = login
+
+    @property
+    def editar_dados(self):
+        return self._editar_dados
+    
+    @editar_dados.setter
+    def editar_dados(self, inst):
+        if not isinstance(inst, PaginaEditarDados):
+            raise ValueError
+        self._editar_dados = inst
     
     @abstractmethod
     def pagina_principal(self) -> None:
