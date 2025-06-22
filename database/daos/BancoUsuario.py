@@ -22,6 +22,12 @@ class BancoUsuario(BancoDeDados[Usuario]):
             (usuario.nome, usuario.cpf, usuario.email, usuario.senha, usuario.tipo)
         )
 
+    def mod(self):
+
+        self.executar("""
+        ALTER TABLE SOLICITACOES ADD COLUMN status INTEGER DEFAULT 1;
+        """)
+
 
     def cpf_existe(self, cpf : str) -> bool:
         resultado = self.executar_select(

@@ -16,8 +16,7 @@ class BancoDeDados(ABC, Generic[T]):
         if not isinstance(diretorio, str):
             raise ValueError("Diretório inválido")
         self.diretorio = diretorio
-        self.criar_tabelas()
-
+        #self.criar_tabelas()
 
     @property
     def diretorio(self) -> str:
@@ -125,6 +124,7 @@ class BancoDeDados(ABC, Generic[T]):
                 cpf_cliente TEXT NOT NULL,
                 assunto TEXT NOT NULL,
                 categoria TEXT NOT NULL,
+                status TEXT CHECK(ativa IN ('True', 'False'))
                 FOREIGN KEY (cpf_cliente) REFERENCES USUARIO(cpf)
             );
         """)

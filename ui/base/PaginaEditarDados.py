@@ -94,10 +94,10 @@ class PaginaEditarDados(SubTela):
         dialogo = ft.AlertDialog(
             modal = True, title = ft.Row([ft.Icon(ft.Icons.EDIT), ft.Text("Alterar Email", weight=ft.FontWeight.BOLD)], spacing=15),
             content = ft.Container(
-                width=450, height=160, padding = 10, content= 
-                ft.Column(spacing = 8, controls=[
+                width=450, height=160, padding = 15, content= 
+                ft.Column(spacing = 15, controls=[
                     ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                           controls=[ft.Text("Email atual", weight=ft.FontWeight.BOLD), ft.Text("emailqualquer@gmail.com")]),
+                           controls=[ft.Text("Email atual", weight=ft.FontWeight.BOLD), ft.Text(self.tela.usuario.email)]),
                     ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                            controls=[ft.Text("Novo email", weight=ft.FontWeight.BOLD), novo_email]),
                     ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,

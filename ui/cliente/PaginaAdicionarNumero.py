@@ -66,10 +66,10 @@ class PaginaAdicionarNumero(SubTela):
                 content=ft.Column([
                     ft.Text("Recarga inicial", size=18, weight=ft.FontWeight.BOLD),
                     ft.Row([ ft.Text("Valor: "), recarga_group ]),
-                    ft.Row([ft.Text("Taxa de solicitação: ", weight=ft.FontWeight.BOLD), ft.Text(f"R$ {str(taxa_solicitacao)}")], spacing=5),
-                    ft.Row([ft.Text("Total a pagar: ", weight=ft.FontWeight.BOLD), ft.Text(f"R$ {float(recarga_group.value) + taxa_solicitacao}")], spacing=5)
+                    ft.Row([ft.Text("Taxa de solicitação: ", weight=ft.FontWeight.BOLD, size=18), ft.Text(f"R$ {str(taxa_solicitacao)}", size=18)], spacing=5),
+                    ft.Row([ft.Text("Total: ", weight=ft.FontWeight.BOLD, size = 18), ft.Text(f"R$ {float(recarga_group.value) + taxa_solicitacao}")], spacing=5)
                 ]),
-                padding=10, border=ft.border.all(1), border_radius=10, margin=10
+                padding=20, border=ft.border.all(1), border_radius=10, margin=10
             ),
             ft.Row([self.tela.criar_botao('Solicitar Número', funcao=solicitar_numero),
                     self.tela.criar_botao('Cancelar', funcao=self.tela.pagina_principal())

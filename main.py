@@ -73,8 +73,15 @@ def testar_db():
     banco.assinaturas.atribuir_assinatura(id_assinatura1, numero1.numero)
 
 
+def adicionar_coluna():
+
+    banco = GerenciadorBanco(diretorio_database)
+
+    banco.usuarios.mod()
+
 
 if __name__ == "__main__":
 
-    padrao()
+    #padrao()
     #testar_db()
+    adicionar_coluna()

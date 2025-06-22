@@ -1,6 +1,7 @@
 import flet as ft
 from ui.base.SubTela import SubTela
 import datetime
+from models.plano import Plano
 
 
 class PaginaNumeros(SubTela):
@@ -24,9 +25,18 @@ class PaginaNumeros(SubTela):
             self.tela.page.close(dialogo)
             self.tela.page.update()
 
-        # Liga eventos de validação
         for campo, _ in campos:
-            campo.on_change = verificar_campos
+            if hasattr(campo, "on_change"):
+                original_on_change = campo.on_change
+
+                def combinado(e, original=original_on_change):
+                    if original:
+                        original(e)  # Mantém o comportamento anterior (ex: validação de float)
+                    verificar_campos(e)  # Faz a validação dos campos preenchidos
+
+                campo.on_change = combinado
+
+
 
         # Define o que o botão "Solicitar" vai fazer
         solicitar.on_click = acao_confirmar
@@ -39,16 +49,23 @@ class PaginaNumeros(SubTela):
                     ft.Text(label, weight=ft.FontWeight.BOLD), campo
                 ])
             )
+
+        row_desc = None
+        if descricao == None:
+            row_desc = ft.Text(descricao)
+        else:
+            row_desc = ft.Divider(thickness=1)
+
+        
         # Cria a caixa de diálogo padrão
         dialogo = ft.AlertDialog(
             modal=True, title=ft.Text(titulo, weight=ft.FontWeight.BOLD), bgcolor=self.tela.cor_dialogo,
             content=ft.Container(
-                width=400, height=altura, padding=10,
+                width=420, height=altura, padding=10,
                 content=ft.Column([
-                    ft.Text(descricao),
+                    row_desc,
                     ft.Container(
-                        padding=ft.padding.only(top=25),
-                        content=ft.Column(campos_layout + [mensagem_erro], spacing=8)
+                        padding=ft.padding.only(top=2), content=ft.Column(campos_layout + [mensagem_erro], spacing=8)
                     )
                 ], spacing=10)
             ),
@@ -119,7 +136,7 @@ class PaginaNumeros(SubTela):
             ft.Column([
                 ft.Text(self.tela.formatarNumero(numero.numero), size=22, weight=ft.FontWeight.BOLD),
                 ft.Row([ ft.Row(spacing=5, controls=[ft.Text("Plano: ", weight=ft.FontWeight.BOLD, size=16), ft.Text(plano.nome, size=16)]),
-                        self.tela.criar_botao("Ver detalhes", cor=False, funcao=self.detalhes_plano)], spacing = 10),
+                        self.tela.criar_botao("Ver detalhes", cor=False, funcao= lambda e:self.detalhes_plano(plano=plano))], spacing = 10),
                 ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),
                         ft.Text(f"Ativo desde: {numero.assinatura.data_assinatura.strftime('%d/%m/%Y')}")], spacing = 5),
                 ft.Row([ft.Icon(ft.Icons.DONE), status], spacing = 5),
@@ -152,7 +169,7 @@ class PaginaNumeros(SubTela):
                 ft.Text(f"{60}% utilizados (6 ligações - 37/60 min)"),
                 linha_info("Renova em", "11/07/2025"),
                 barra_progresso(60),
-                ft.Row([self.tela.criar_botao("Adicionar minutos", ft.Icons.ADD, funcao=self.adicionar_minutos),
+                ft.Row([self.tela.criar_botao("Adicionar minutos", ft.Icons.ADD, funcao = lambda e:self.adicionar_minutos(plano=plano)),
                         self.tela.criar_botao("Ver ligações", ft.Icons.LIST_ALT, funcao=self.ver_ligacoes)
                         ], alignment=ft.MainAxisAlignment.START, spacing = 10),
             ])
@@ -164,7 +181,7 @@ class PaginaNumeros(SubTela):
                 ft.Text(f"{40} de 100 mensagens utilizados ({60} disponíveis)"),
                 linha_info("Renova em", "11/07/2025"),
                 barra_progresso(40),
-                ft.Row([self.tela.criar_botao("Comprar pacote de mensagens", ft.Icons.ADD, funcao=self.comprar_mensagens),
+                ft.Row([self.tela.criar_botao("Comprar pacote de mensagens", ft.Icons.ADD, funcao=lambda e:self.comprar_mensagens(plano=plano)),
                         self.tela.criar_botao("Ver histórico", ft.Icons.LIST_ALT, funcao=self.ver_mensagens)],
                        alignment=ft.MainAxisAlignment.START, spacing = 10),
             ])
@@ -193,7 +210,7 @@ class PaginaNumeros(SubTela):
         )
 
 
-    def detalhes_plano(self, e = None):
+    def detalhes_plano(self, e = None, plano : Plano = None) -> None:
 
         info_plano = None 
 
@@ -209,13 +226,13 @@ class PaginaNumeros(SubTela):
             self.tela.page.update()
 
         info_plano = ft.AlertDialog(
-            modal = True, title = ft.Text("Plano X", weight=ft.FontWeight.BOLD),
+            modal = True, title = ft.Text(plano.nome, weight=ft.FontWeight.BOLD),
             content=ft.Container(width=350, height=160, padding = 10, content = ft.Column([
-                linha('Valor', 'R$ ' + '59,90'),
-                linha('Dados de Internet', '1000' + ' MB'),
-                linha('Valor de recarga', 'R$ ' + '5,20'),
-                linha('Máximo de Ligações', '120'),
-                linha('Máximo de Mensagens', '150')
+                linha('Valor', 'R$ ' + f'{plano.preco}'),
+                linha('Dados de Internet', f'{plano.dados_mb}' + ' MB'),
+                linha('Máximo de Ligações', f'{plano.maximo_ligacao}'),
+                linha('Minutos máx. ligação', f'{plano.minutos_max_ligacao}'),
+                linha('Máximo de Mensagens', f'{plano.maximo_mensagens}')
             ])),
             actions = [
                 ft.TextButton("Sair", on_click = fechar_info_plano)
@@ -228,12 +245,13 @@ class PaginaNumeros(SubTela):
         self.tela.page.update()
 
     
-    def adicionar_minutos(self, e : ft.ControlEvent = None) -> None:
+    def adicionar_minutos(self, e : ft.ControlEvent = None, plano : Plano = None) -> None:
         
         senha = self.tela.textField(tamanho=130, texto=True)
         confirmar_senha = self.tela.textField(tamanho=130, texto=True)
         senha.password = True
         confirmar_senha.password = True
+        msg_erro = ft.Text('Senha incorreta.', color = ft.Colors.RED, visible=False)
 
         saldo = 10.00
         saldo_atual = ft.Text(f"R$ {saldo}")
@@ -246,34 +264,38 @@ class PaginaNumeros(SubTela):
             nonlocal texto_info
             nonlocal valor
             texto_info.value = f"{e.control.value} minutos"
-            valor.value = f"R$ {e.control.value * 0.2}"
+            valor.value = f"R$ {e.control.value * plano.pacote_minutos_unitario}"
             self.tela.page.update()
-
 
         def confirmar(e = None) -> None:
-            print("confirmado ok")
-            self.tela.page.close(self.tela.page.dialog)
-            self.tela.page.update()
+            nonlocal senha
+            nonlocal confirmar_senha
+            if (self.tela.bd.usuarios.login(self.tela.usuario.email, senha.value)) and confirmar_senha.value == senha.value:
+                self.tela.page.close(self.tela.page.dialog)
+                self.tela.page.update()
+            else:
+                msg_erro.visible = True
+                self.tela.page.update()
 
         slider.on_change_end = slider_change
 
         self.criar_dialogo(
-            titulo = "Comprar pacote de minutos extra",
-            descricao = "Adicione mais minutos de ligação para seu número. Preço unitário: R$ 0,20 = 1 min",
-            campos=[(saldo_atual, 'Saldo atual'), (slider, "Selecione os minutos extra"), (texto_info, "Pacote"), (valor, "Valor"),
-                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha")],
+            titulo = "Comprar pacote de minutos extra", descricao=None,
+            campos=[(saldo_atual, 'Saldo atual'), (ft.Text(f'R$ {plano.pacote_minutos_unitario}'), 'Preço unitário'),
+                    (slider, "Selecione os minutos extra"), (texto_info, "Pacote"), (valor, "Valor"),
+                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha"), (msg_erro,'')],
             acao_confirmar=confirmar,
-            altura=360
+            altura=370
         )
 
 
-    def comprar_mensagens(self, e : ft.ControlEvent = None) -> None:
+    def comprar_mensagens(self, e : ft.ControlEvent = None, plano : Plano = None) -> None:
         
         senha = self.tela.textField(tamanho=130, texto=True)
         confirmar_senha = self.tela.textField(tamanho=130, texto=True)
         senha.password = True
         confirmar_senha.password = True
-
+        msg_erro = ft.Text('Senha inválida.', color = ft.Colors.RED, visible=False)
         saldo = 10.00
         saldo_atual = ft.Text(f"R$ {saldo}")
 
@@ -285,21 +307,27 @@ class PaginaNumeros(SubTela):
             nonlocal texto_info
             nonlocal valor
             texto_info.value = f"{e.control.value} mensagens"
-            valor.value = f"R$ {e.control.value * 0.2}"
+            valor.value = f"R$ {e.control.value * plano.pacote_mensagem_unitario}"
             self.tela.page.update()
 
-        def confirmar(e = None) -> None:
-            print("confirmado ok")
-            self.tela.page.close(self.tela.page.dialog)
-            self.tela.page.update()
+        def confirmar(e : ft.ControlEvent = None) -> None:
+            nonlocal senha
+            nonlocal confirmar_senha
+            if (self.tela.bd.usuarios.login(self.tela.usuario.email, senha.value)) and confirmar_senha.value == senha.value:
+                self.tela.page.close(self.tela.page.dialog)
+                self.tela.page.update()
+            else:
+                msg_erro.visible = True
+                self.tela.page.update()
 
         slider.on_change_end = slider_change
 
         self.criar_dialogo(
             titulo = "Comprar pacote de mensagens",
-            descricao = "Compre um pacote de mensagens extra e mande mensagem para quem quiser!",
-            campos=[(saldo_atual, 'Saldo atual'),(slider, "Selecione o pacote de mensagens"), (texto_info, "Pacote"), (valor, "Valor"),
-                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha")],
+            descricao = None,
+            campos=[(saldo_atual, 'Saldo atual'), (ft.Text(f'R$ {plano.pacote_mensagem_unitario}'), 'Preço unitário'),
+                    (slider, "Selecione o pacote de mensagens"), (texto_info, "Pacote"), (valor, "Valor"),
+                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha"), (msg_erro,'')],
             acao_confirmar=confirmar,
             altura=350
         )
@@ -311,23 +339,28 @@ class PaginaNumeros(SubTela):
         confirmar_senha = self.tela.textField(tamanho=130, texto=True)
         senha.password = True
         confirmar_senha.password = True
-
+        msg_erro = ft.Text('Senha inválida.', color = ft.Colors.RED, visible=False)
         saldo = 10.00
         saldo_atual = ft.Text(f"R$ {saldo}")
 
         adicionar_saldo = self.tela.textField(tamanho=130, flutuante=True, prefixo='R$ ')
 
-        def confirmar(e = None) -> None:
-            print("confirmado ok")
-            self.tela.page.close(self.tela.page.dialog)
-            self.tela.page.update()
+        def confirmar(e : ft.ControlEvent = None) -> None:
+            nonlocal senha
+            nonlocal confirmar_senha
+            if (self.tela.bd.usuarios.login(self.tela.usuario.email, senha.value)) and confirmar_senha.value == senha.value:
+                self.tela.page.close(self.tela.page.dialog)
+                self.tela.page.update()
+            else:
+                msg_erro.visible = True
+                self.tela.page.update()
 
         self.criar_dialogo(
             titulo = "Adicionar saldo ao número (recarga)",
             descricao = "Usando o saldo do número, você pode comprar minutos de ligação adicionais, mensagens adicionais ou pagar suas faturas.",
-            campos=[(saldo_atual, 'Saldo atual'), (adicionar_saldo,'Valor de recarga'), (senha, 'Digite sua senha'), (confirmar_senha, 'Confirme sua senha')],
+            campos=[(saldo_atual, 'Saldo atual'), (adicionar_saldo,'Valor de recarga'), (senha, 'Digite sua senha'), (confirmar_senha, 'Confirme sua senha'), (msg_erro,'')],
             acao_confirmar=confirmar,
-            altura=350
+            altura=200
         )
 
 
@@ -337,7 +370,7 @@ class PaginaNumeros(SubTela):
         confirmar_senha = self.tela.textField(tamanho=130, texto=True)
         senha.password = True
         confirmar_senha.password = True
-
+        msg_erro = ft.Text('Senha inválida.', color = ft.Colors.RED, visible=False)
         texto_info = ft.Text("")
         valor = ft.Text('R$ 0.00')
 
@@ -354,10 +387,15 @@ class PaginaNumeros(SubTela):
             valor.value = f"R$ {e.control.value * 0.05}"
             self.tela.page.update()
 
-        def confirmar(e = None) -> None:
-            print("confirmado ok")
-            self.tela.page.close(self.tela.page.dialog)
-            self.tela.page.update()
+        def confirmar(e : ft.ControlEvent = None) -> None:
+            nonlocal senha
+            nonlocal confirmar_senha
+            if (self.tela.bd.usuarios.login(self.tela.usuario.email, senha.value)) and confirmar_senha.value == senha.value:
+                self.tela.page.close(self.tela.page.dialog)
+                self.tela.page.update()
+            else:
+                msg_erro.visible = True
+                self.tela.page.update()
 
         slider.on_change_end = slider_change
 
@@ -365,7 +403,7 @@ class PaginaNumeros(SubTela):
             titulo = "Comprar pacote de mensagens",
             descricao = "Ao comprar o pacote de dados de internet, em até 2 minutos eles estarão disponíveis para você aproveitar como quiser!",
             campos=[(saldo_atual, 'Saldo atual'), (slider, "Selecione os dados extra"), (texto_info, "Dados a adicionar"), (valor, "Valor"),
-                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha")],
+                    (senha, "Digite sua senha"), (confirmar_senha, "Confirme sua senha"), (msg_erro,'')],
             acao_confirmar=confirmar,
             altura=350
         )
