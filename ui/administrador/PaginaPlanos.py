@@ -182,7 +182,7 @@ class PaginaPlanos(SubTela):
         )
 
 
-    def excluir_plano(self, e : ft.ControlEvent = None, plano : Plano = None):
+    def excluir_plano(self, e : ft.ControlEvent = None, plano : Plano = None) -> None:
 
         if( self.tela.bd.planos.excluir_plano(plano.nome) ):
             self.tela.page.open(ft.AlertDialog(

@@ -329,8 +329,3 @@ class PaginaCadastro(SubTela):
         )
 
         atualizar_info()  # Primeira atualização do card
-
-
-    def criar_numero(self, numero : Numero, plano : Plano) -> None:
-
-        pass

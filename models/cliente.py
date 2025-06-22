@@ -19,35 +19,3 @@ class Cliente(Usuario):
             if not isinstance(num, Numero):
                 raise ValueError
         self.__numeros = lista_numeros
-
-'''
-    def visualizar_numeros(self) -> list[str]:
-        return [numero.numero for numero in self.numeros]
-
-    def visualizar_ligacoes(self) -> list[dict]:
-        resultado = []
-        for numero in self.numeros:
-            ligacoes = numero.get_ligacoes()  # [BANCO] Criar método em Numero que use banco para retornar as ligações do número
-            for lig in ligacoes:
-                resultado.append({
-                    "numero_origem": numero.numero,
-                    "destino": lig.destino,
-                    "data_inicio": lig.data_inicio,
-                    "duracao": lig.duracao,
-                    "custo": lig.calcular_custo()
-                })
-        return resultado
-
-    def ver_mensagens(self) -> list[dict]:
-        resultado = []
-        for numero in self.numeros:
-            mensagens = numero.get_mensagens()  # [BANCO] Criar método em Numero que use banco para retornar as mensagens do número
-            for msg in mensagens:
-                resultado.append({
-                    "numero_origem": numero.numero,
-                    "destino": msg.destino,
-                    "conteudo": msg.conteudo,
-                    "data_envio": msg.data_envio
-                })
-        return resultado
-'''

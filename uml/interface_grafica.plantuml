@@ -1,0 +1,176 @@
+@startuml ui
+
+!pragma outputdir "uml/imgs"
+!pragma outputformat png
+skinparam classAttributeIconSize 0
+left to right direction
+skinparam nodesep 50
+skinparam ranksep 80
+scale 1.5
+
+class TelaBase {
+    - app : ft.app
+    - page : ft.Page
+    - conteudo_pagina : ft.Container
+    - cor_barra_progresso : str
+    - cor_botao : str
+    - cor_cartao_1 : str
+    - cor_cartao_2 : str
+    - cor_cartao_3 : str
+    - cor_dialogo : str
+    # bd : GerenciadorBanco
+
+    + validar_cor( cor : str ) : bool
+    + iniciar( pagina_inicio : ft.Page ) : None
+    + atualizar_pagina( conteudo : ft.Column ) : None
+    + formatarNumero( numero : str ) : str
+    + criar_botao( texto : str, icone : ft.Icon, funcao : void, cor : bool ) : ft.ElevatedButton
+    + textField( tamanho : int, prefixo : str, inteiro : bool, flutuante : bool, texto : bool, altura : int) : ft.TextField
+    + dropdown( texto : str, listaOpcoes : list, tamanho : int, funcao : void ) : ft.Dropdown
+    + definir_cor_vermelho() : None
+    + definir_cor_azul() : None
+}
+
+class SubTela {
+    tela : TelaBase
+}
+
+class Tela {
+    + iniciar() : None
+    + pagina_login( page : ft.Page ) : None
+    + validar_credenciais( email : str, senha : str ) : bool
+}
+
+abstract class TelaUsuario {
+    + login_callback : void
+    + editar_dados : PaginaEditarDados
+    + usuario : Usuario
+    {abstract} + pagina_principal() : None
+    {abstract} + paginas_menu_lateral( e : ft.ControlEvent ) : None
+    + sair() : None
+    + confirmar_identidade( e : ft.ControlEvent, titulo : str, ao_confirmar : void ) : None
+
+}
+
+class PaginaEditarDados {
+    + pagina_editar_dados() : None
+    + editar_email() : None
+    + modificar_dados( dialogo : ft.AlertDialog, novo_email : str, nova_senha : str ) : None
+    + editar_email( e : ft.ControlEvent ) : None
+    + editar_senha( e : ft.ControlEvent ) : None
+
+}
+
+class TelaCliente {
+    - menu_lateral : ft.Column
+    - numeros_expandiveis_ref : ft.Ref
+    - numeros_lista_ref : ft.Ref
+    - numeros_expandiveis : ft.Container
+    - faturas : PaginaFaturas
+    - numeros : PaginaNumeros
+    - adicionar_numero : PaginaAdicionarNumero
+    - numeros_usuario : list<Numero>
+    + pagina_principal() : None
+    + criar_menu_lateral() : None
+    + paginas_menu_lateral( e : ft.ControlEvent ) : None
+    + ajuda_suporte() : None
+}
+
+class PaginaNumeros {
+    + criar_dialogo( titulo : str, descricao : str, campos : list, acao_confirmar : void, altura : int ) : None
+    + pagina_meus_numeros() : None
+    + pagina_numero( e : ft.ControlEvent ) : None
+    + detalhes_plano( e : ft.ControlEvent, plano : Plano ) : None
+    + adicionar_minutos( e : ft.ControlEvent, plano : Plano ) : None
+    + comprar_mensagens( e : ft.ControlEvent, plano : Plano ) : none
+    + recarga( e : ft.ControlEvent ) : None
+    + comprar_dados( e : ft.ControlEvent ) : None
+    + historico_saldos( e : ft.ControlEvent ) : None
+    + consumo_dados( e : ft.ControlEvent ) : None
+    + ver_mensagem( e : ft.ControlEvent ) : None
+    + ver_ligacoes( e : ft.ControlEvent ) : None
+    + transferir_numero( e : ft.ControlEvent ) : None
+    + cancelar_numero( e : ft.ControlEvent ) : None
+    + mudar_assinatura( e : ft.ControlEvent ) ; None
+}
+
+class PaginaFaturas {
+    + pagina_faturas() : None
+}
+
+class PaginaAdicionarNumero {
+    + pagina_adicionar_numero() : None
+    + criar_cartao_plano() : None
+}
+
+class TelaAdministrador {
+    # cadastros : PaginaCadastro
+    # clientes : PaginaClientes
+    # solicitacoes : PaginaSolicitacoes
+    # planos : PaginaPlanos
+    # faturas : PaginaFaturasAdm
+}
+
+class PaginaCadastro {
+    + cadastrar_cliente( e : ft.ControlEvent ) : None
+    + cadastrar_plano( e : ft.ControlEvent ) : None
+    + cadastrar_numero( e : ft.ControlEvent ) : None
+}
+
+class PaginaClientes {
+    + criar_cartao_cliente( cliente : Cliente ) : ft.Container
+    + pagina_clientes() : None
+    + pagina_edicao_numero( e : ft.ControlEvent , cliente : Cliente ) : None
+    + suspender_numero( e : ft.ControlEvent ) : None
+    + cancelar_numero( e : ft.ControlEvent ) : None
+    + editar_dados_cliente( e : ft.ControlEvent ) : None
+}
+
+class PaginaFaturasAdm {
+    + reenviar_fatura( e : ft.ControlEvent ) : None
+    + ver_detalhes_fatura( e : ft.ControlEvent ) : None
+    + ver_faturas_cliente( e : ft.ControlEvent ) : none
+    + criar_cartao_fatura( fatura : Fatura ) : ft.Container
+}
+
+class PaginaPlanos {
+    + cadastros : PaginaCadastro
+    + pagina_planos( e : ft.ControlEvent ) : None
+    + criar_cartao_plano( plano : Plano, on_excluir : void ) : ft.Container
+    + editar_plano( e : ft.ControlEvent ) : None
+    + excluir_plano( e : ft.ControlEvent , plano : Plano ) : None
+}
+
+class PaginaSolicitacoes {
+    + pagina_solicitacoes( solicitacoes : list<Solicitacao>, filtro_texto : str ) : None
+    + criar_cartao_solicitacao( solicitacao : Solicitacao ) : ft.Container
+}
+
+Tela --> TelaBase
+TelaBase <-- TelaUsuario
+TelaUsuario --|> TelaAdministrador
+TelaUsuario --|> TelaCliente
+
+Tela o-- TelaCliente
+Tela o-- TelaAdministrador
+
+TelaCliente o-- PaginaAdicionarNumero : usa
+TelaCliente o-- PaginaFaturas : usa
+TelaCliente o-- PaginaNumeros : usa
+TelaCliente o-- PaginaEditarDados : usa
+TelaAdministrador o-- PaginaCadastro : usa
+TelaAdministrador o-- PaginaClientes : usa
+TelaAdministrador o-- PaginaFaturasAdm : usa
+TelaAdministrador o-- PaginaSolicitacoes : usa
+
+PaginaAdicionarNumero --> SubTela
+PaginaCadastro --> SubTela
+PaginaFaturas --> SubTela
+PaginaEditarDados --> SubTela
+PaginaNumeros --> SubTela
+PaginaFaturasAdm --> SubTela
+PaginaClientes --> SubTela
+PaginaPlanos --> SubTela
+PaginaSolicitacoes --> SubTela
+
+@enduml

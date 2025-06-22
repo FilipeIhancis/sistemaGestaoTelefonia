@@ -6,7 +6,6 @@ class PaginaSolicitacoes(SubTela):
 
     def __init__(self, tela_admin):
         super().__init__(tela_admin)
-        self.__tela = tela_admin
 
 
     def pagina_solicitacoes(self, solicitacoes : list[Solicitacao] = None, filtro_texto : str = 'Todas') -> None:

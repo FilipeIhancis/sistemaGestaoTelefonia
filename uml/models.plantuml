@@ -1,0 +1,101 @@
+@startuml models
+
+skinparam classAttributeIconSize 0
+'skinparam linetype ortho
+left to right direction
+
+' ==== Classes ====
+class Usuario {
+    - nome : str
+    - cpf : str
+    # email : str
+    # senha : str
+    - data_registro : datetime
+    # tipo : str
+}
+
+class Cliente {
+    # numeros : list<Numero>
+}
+
+class Administrador {
+    # solicitacoes : list<Solicitacao>
+}
+
+class Numero {
+    - numero : str
+    - cpf_proprietario : str
+    # saldo : float 
+    # mensagens : list<Mensagem>
+    # ligacoes : list<Ligacao>
+}
+
+class Assinatura {
+    - data_assinatura : datetime
+    # ativa : bool
+}
+
+class Plano {
+    # nome : str
+    # dados_mb : int
+    # preco : float 
+    # maximo_mensagens : int  
+    # maximo_ligacao : int 
+}
+
+class Mensagem {
+    - conteudo : str
+    - origem : str 
+    - destino : str 
+    - data_envio : datetime 
+}
+
+class Ligacao {
+    - origem : str 
+    - destino : str 
+    - data_inicio : datetime 
+    - data_fim : datetime 
+}
+
+class Fatura {
+    - origem : str 
+    # valor_total : float 
+    # status : bool 
+}
+
+class Solicitacao {
+    # id : int 
+    - categoria : str 
+    - assunto : str 
+    # status : bool
+}
+
+' ==== Relações de Herança ==='
+Usuario <-up- Cliente
+Usuario <-- Administrador
+
+' ==== Relações de Composição (todo-parte forte) ==='
+Numero *-- Assinatura : "1" possui "1"
+Assinatura *-- Plano : "1" contém "1"
+
+' ==== Relações de Agregação (todo-parte fraca) ==='
+Cliente o-- Numero : "1" possui "0..*"
+Administrador o-- Solicitacao : "1" gerencia "0..*"
+Numero o-- Fatura : "1" gera "0..*"
+
+' ==== Associações ==='
+Numero "1" -- "0..*" Mensagem : registra
+Numero "1" -- "0..*" Ligacao : contém
+Solicitacao "1" -- "1" Cliente : "solicitado por"
+
+' ==== Estilo ==='
+skinparam class {
+    BackgroundColor White
+    BorderColor #333
+}
+skinparam arrow {
+    Thickness 2
+    HeadSize 15
+}
+
+@enduml

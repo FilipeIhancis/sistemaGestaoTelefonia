@@ -1,0 +1,100 @@
+@startuml database
+
+skinparam classAttributeIconSize 0
+left to right direction
+
+abstract class BancoDeDados<T> {
+    # diretorio : str
+    + executar(query : str, params : tuple) : int
+    + executar_select(query : str, params : tuple) : List<Tuple>
+    + criar_tabelas() : void
+    {abstract} + salvar() : void
+}
+
+class BancoAssinatura {
+    + salvar(assinatura : Assinatura) : int
+    + atribuir_assinatura(id_assinatura : int, numero : str) : void
+    + obter_assinaturas() : List<Assinatura>
+    + obter_assinatura(numero : Numero) : Assinatura
+    + obter_plano_via_id(id_plano : int) : Plano
+    + obter_plano(assinatura : Assinatura) : Plano
+}
+
+class BancoFatura {
+    + salvar(fatura : Fatura) : int
+    + obter_faturas_numero(numero : str) : List<Fatura>
+}
+
+class BancoNumero {
+    + salvar(numero : Numero) : void
+    + buscar_por_cpf(cpf_cliente : str) : List<Numero>
+    + numero_existe(numero : str) : bool
+    + obter_numeros() : List<Numero>
+    + obter_numero(num : str) : Numero
+}
+
+class BancoPlano {
+    + salvar(plano : Plano) : int
+    + plano_existe(nome_plano : str) : bool
+    + obter_plano(nome_plano : str) : Plano
+    + obter_planos() : Plano
+    + obter_id_plano(plano : Plano) : int
+    + adicionar_plano(plano : Plano) : int
+    + excluir_plano(nome_plano : str) : bool
+}
+
+class BancoUsuario {
+    + salvar(usuario : Usuario) : int
+    + cpf_existe(cpf : str) : bool
+    + email_existe(email : str) : bool
+    + login(email : str, senha : str) : bool
+    + buscar_usuario(email : str, senha : str) : Usuario
+    + buscar_usuario_cpf(cpf : str) : Usuario
+    + alterar_usuario(cpf_usuario : str, novo_email : str, nova_senha : str) : void
+    + cpf_existe_email(cpf : str, email : str) : bool
+    + obter_usuarios() : List<Usuario>
+    + obter_clientes() : List<Cliente>
+    + adicionar_cliente(usuario : Usuario) : bool
+}
+
+class BancoSolicitacao {
+    - banco_usuarios : BancoUsuario
+    + salvar(solicitacao : Solicitacao) : int
+    + tornar_resolvida(solicitacao : Solicitacao) : void
+    + tornar_pendente(solicitacao : Solicitacao) : void
+    + obter_solicitacoes() : List<Solicitacao>
+    + obter_solicitacoes_cliente(usuario : Usuario) : List<Solicitacao>
+    + pendentes() : List<Solicitacao>
+    + resolvidas() : List<Solicitacao>
+}
+
+' Heranças:
+'BancoDeDados <|-- BancoAssinatura
+'BancoDeDados <|-- BancoFatura
+'BancoDeDados <|-- BancoNumero
+BancoNumero --|> BancoDeDados
+BancoFatura --|> BancoDeDados
+BancoAssinatura --|> BancoDeDados
+BancoPlano --|> BancoDeDados
+BancoUsuario --|> BancoDeDados
+BancoSolicitacao --|> BancoDeDados
+
+' Agora o GerenciadorBanco isolado
+class GerenciadorBanco {
+    + numeros : BancoNumero
+    + usuarios : BancoUsuario
+    + assinaturas : BancoAssinatura
+    + planos : BancoPlano
+    + faturas : BancoFatura
+    + solicitacoes : BancoSolicitacao
+}
+
+' Relações de agregação (associação forte):
+GerenciadorBanco o-- BancoNumero
+GerenciadorBanco o-- BancoUsuario
+GerenciadorBanco o-- BancoAssinatura
+GerenciadorBanco o-- BancoPlano
+GerenciadorBanco o-- BancoFatura 
+GerenciadorBanco o-- BancoSolicitacao
+ 
+@enduml
