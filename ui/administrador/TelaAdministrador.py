@@ -6,6 +6,7 @@ from ui.administrador.PaginaPlanos import PaginaPlanos
 from ui.administrador.PaginaFaturas import PaginaFaturas
 from ui.administrador.PaginaClientes import PaginaClientes
 from models.administrador import Administrador
+import random
 
 
 class TelaAdministrador(TelaUsuario):
@@ -165,3 +166,12 @@ class TelaAdministrador(TelaUsuario):
             case 'Solicitações':        self.solicitacoes.pagina_solicitacoes()
             case 'Planos':              self.planos.pagina_planos()
             case 'Sair':                self.sair()
+
+
+    def gerar_numero_telefone(self) -> str:
+        num = ''
+        while True:
+            num = '319' + ''.join(str(random.randint(0,9)) for i in range(8))
+            if not self.bd.numeros.numero_existe(num):
+                break
+        return num

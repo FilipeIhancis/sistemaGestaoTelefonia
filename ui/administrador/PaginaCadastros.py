@@ -3,6 +3,10 @@ from ui.base.SubTela import SubTela
 from models.usuario import Usuario
 from datetime import datetime
 from models.plano import Plano
+from models.usuario import Usuario
+from models.numero import Numero
+from models.assinatura import Assinatura
+
 
 class PaginaCadastro(SubTela):
 
@@ -184,64 +188,149 @@ class PaginaCadastro(SubTela):
 
     def cadastrar_numero(self, e = None) -> None:
 
-        def criar_linha(texto1 : str, texto2 : str) -> ft.Row:
-            return ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls= [ft.Text(value=texto1, weight=ft.FontWeight.BOLD), ft.Text(value=texto2)])
+        cliente_escolhido = None
+        plano_escolhido = None
+        numero_aleatorio = self.tela.gerar_numero_telefone()
+        texto_numero = ft.Text(self.tela.formatarNumero(numero_aleatorio))
 
-        cabecalho = ft.Row([
-            ft.Icon(ft.Icons.ADD_IC_CALL), ft.Text("Adicionar número ao sistema", size=22, weight=ft.FontWeight.BOLD)
-        ])
-
-        cpfs = ['XXX.XXX.XXX-XX', 'YYY.YYY.YYY-YY', 'ZZZ.ZZZ.ZZZ-ZZ']
-        planos = ['PLANO 1', 'PLANO 2', 'PLANO 3']
+        cpfs = [cliente.cpf for cliente in self.tela.bd.usuarios.obter_clientes()]
+        planos = [plano.nome for plano in self.tela.bd.planos.obter_planos()]
 
         proprietario = self.tela.dropdown('Escolha um cliente', cpfs)
         plano = self.tela.dropdown('Escolha um plano', planos)
+        saldo_inicial = self.tela.textField(prefixo='R$ ', tamanho=150, flutuante=True)
+        info = ft.Container(padding=20, border_radius=8, border=ft.border.all(1), expand=True)
 
-        configDados = ft.Container( padding = 20, border_radius=8, border=ft.border.all(1), expand=True, content=ft.Column([
-                # Cabeçalho do card
-                ft.Container(padding = ft.padding.only(bottom=8), content=
-                    ft.Row(spacing=5, controls=[ft.Icon(ft.Icons.SETTINGS), ft.Text("Configuração de dados", size=18, weight=ft.FontWeight.BOLD)])
-                ),
-                # Número + Gerar número aleatório
-                ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
-                    ft.Text("Número", weight=ft.FontWeight.BOLD),
-                    ft.Row(spacing=10, controls=[
-                        ft.Text("(31) XXXXX-XXXX"), ft.IconButton(icon=ft.Icons.AUTORENEW)
+        # Função auxiliar para criar linhas de info
+        def criar_linha(texto1: str, texto2: str) -> ft.Row:
+            return ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                controls=[ft.Text(texto1, weight=ft.FontWeight.BOLD), ft.Text(texto2)]
+            )
+
+        # Função que atualiza o card de informações
+        def atualizar_info() -> None:
+            nonlocal info
+            linhas = [
+                criar_linha('Número', self.tela.formatarNumero(numero_aleatorio)),
+                ft.Divider(thickness=1),
+                criar_linha('Proprietário', cliente_escolhido.cpf if cliente_escolhido else '----'),
+                ft.Divider(thickness=1),
+                criar_linha('Plano', plano_escolhido.nome if plano_escolhido else '----'),
+                ft.Divider(thickness=1),
+                criar_linha('Dados (MB)', str(plano_escolhido.dados_mb) if plano_escolhido else '----'),
+                ft.Divider(thickness=1),
+                criar_linha('Máximo de ligações', str(plano_escolhido.maximo_ligacao) if plano_escolhido else '----'),
+                ft.Divider(thickness=1),
+                criar_linha('Máximo de mensagens', str(plano_escolhido.maximo_mensagens) if plano_escolhido else '----')
+            ]
+
+            info.content = ft.Column(
+                [ft.Container(padding=ft.padding.only(bottom=18),
+                            content=ft.Row(spacing=5, controls=[
+                                ft.Icon(ft.Icons.INFO),
+                                ft.Text("Informações do número", size=18, weight=ft.FontWeight.BOLD)
+                            ])
+                            )] + linhas,
+                spacing=2
+            )
+            self.tela.page.update()
+
+        # Função que trata mudanças nos dropdowns
+        def obter_info(e: ft.ControlEvent = None) -> None:
+            nonlocal cliente_escolhido, plano_escolhido
+            cliente_escolhido = self.tela.bd.usuarios.buscar_usuario_cpf(cpf=proprietario.value)
+            plano_escolhido = self.tela.bd.planos.obter_plano(plano.value)
+            atualizar_info()
+
+        # Botão de regenerar número
+        def alterar_num(e: ft.ControlEvent = None) -> None:
+            nonlocal numero_aleatorio
+            numero_aleatorio = self.tela.gerar_numero_telefone()
+            texto_numero.value = self.tela.formatarNumero(numero_aleatorio)
+            atualizar_info()
+            self.tela.page.update()
+
+        proprietario.on_change = obter_info
+        plano.on_change = obter_info
+
+        linha_num = ft.Row(
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            controls=[
+                ft.Text("Número", weight=ft.FontWeight.BOLD),
+                ft.Row(spacing=10, controls=[
+                    texto_numero, ft.IconButton(icon=ft.Icons.AUTORENEW, on_click=alterar_num)
+                ])
+            ]
+        )
+
+        # Card de configuração de dados
+        configDados = ft.Container(
+            padding=20, border_radius=8, border=ft.border.all(1), expand=True,
+            content=ft.Column([
+                ft.Container(
+                    padding=ft.padding.only(bottom=8),
+                    content=ft.Row(spacing=5, controls=[
+                        ft.Icon(ft.Icons.SETTINGS),
+                        ft.Text("Configuração de dados", size=18, weight=ft.FontWeight.BOLD)
                     ])
-                ]),
-                # Proprietário + Dropdown
+                ),
+                linha_num,
                 ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
                     ft.Text("Proprietário", weight=ft.FontWeight.BOLD), proprietario
                 ]),
-                # Plano + Dropdown
                 ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
                     ft.Text("Plano", weight=ft.FontWeight.BOLD), plano
                 ]),
                 ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
-                    ft.Text("Saldo inicial", weight=ft.FontWeight.BOLD), self.tela.textField(prefixo='R$ ', tamanho=150, flutuante=True)
+                    ft.Text("Saldo inicial", weight=ft.FontWeight.BOLD), saldo_inicial
                 ])
             ])
         )
 
-        info = ft.Container( padding = 20, border_radius=8, border=ft.border.all(1), expand=True, content=ft.Column([
-                ft.Container(padding = ft.padding.only(bottom=18) , content=
-                    ft.Row(spacing=5, controls=[ft.Icon(ft.Icons.INFO), ft.Text("Informações do número", size=18, weight=ft.FontWeight.BOLD)])
-                ),
-                criar_linha('Número', '(31) XXXXXX-XXXX'), ft.Divider(thickness=1),
-                criar_linha('Proprietário', 'XXX.XXX.XXX-XX'), ft.Divider(thickness=1),
-                criar_linha('Plano', 'NomePlano'), ft.Divider(thickness=1),
-                criar_linha('Dados (MB)', '1000 MB'), ft.Divider(thickness=1),
-                criar_linha('Máximo de ligações', '20'), ft.Divider(thickness=1),
-                criar_linha('Máximo de mensagens', '10')
-            ], spacing=2)
+        # Função para salvar o número no banco
+        def criar(e: ft.ControlEvent = None) -> None:
+            if cliente_escolhido and plano_escolhido and saldo_inicial.value:
+                self.tela.bd.numeros.salvar(
+                    Numero(
+                        numero=numero_aleatorio,
+                        cpf_proprieatario=cliente_escolhido.cpf,
+                        saldo=float(saldo_inicial.value)
+                    )
+                )
+                self.tela.bd.assinaturas.salvar(
+                    Assinatura(plano_escolhido, datetime.now(), True)
+                )
+                self.tela.page.open(ft.AlertDialog(
+                    title=ft.Text("Número adicionado"),
+                    content=ft.Text("Acesse a seção 'Clientes' para visualizar o número do cliente."),
+                    on_dismiss=self.cadastrar_numero,
+                    bgcolor=self.tela.cor_dialogo
+                ))
+            else:
+                self.tela.page.open(ft.AlertDialog(
+                    title=ft.Text("Erro"),
+                    content=ft.Text("Defina os dados do número antes de criar."),
+                    bgcolor=self.tela.cor_dialogo
+                ))
+            self.tela.page.update()
+
+        # Página final
+        self.tela.atualizar_pagina(
+            ft.Column([
+                ft.Row([
+                    ft.Icon(ft.Icons.ADD_IC_CALL),
+                    ft.Text("Adicionar número ao sistema", size=22, weight=ft.FontWeight.BOLD)
+                ]),
+                ft.Divider(thickness=2),
+                ft.Row([configDados, info]),
+                self.tela.criar_botao('Criar número', funcao=criar)
+            ])
         )
 
-        botoes = ft.Row(spacing=6, controls=[
-            self.tela.criar_botao('Criar número'), self.tela.criar_botao('Cancelar')
-        ])
+        atualizar_info()  # Primeira atualização do card
 
-        info.height = configDados.height
 
-        self.tela.atualizar_pagina(ft.Column([
-            cabecalho, ft.Divider(thickness=2), ft.Row([configDados, info]), botoes])
-        )
+    def criar_numero(self, numero : Numero, plano : Plano) -> None:
+
+        pass
