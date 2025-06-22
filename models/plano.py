@@ -35,10 +35,10 @@ class Plano:
     def preco(self):
         return self.__preco
     @preco.setter
-    def preco(self, preco : float):
-        if not isinstance(preco, float) and not isinstance(preco, int):
+    def preco(self, novo_preco : float):
+        if not isinstance(novo_preco, float) and not isinstance(novo_preco, int):
             raise ValueError
-        self.__dados_mb = float(preco)
+        self.__preco = float(novo_preco)
     
     @property
     def maximo_mensagens(self):
@@ -84,8 +84,3 @@ class Plano:
         if not isinstance(pacote, float) and not isinstance(pacote, int):
             raise ValueError
         self.__pacote_minutos_unitario = pacote
-    
-
-    def custo_minuto_excedente(self) -> float:
-        # Custo do minuto extra baseado no valor médio por minuto, com acréscimo
-        return (self.preco / self.minutos_max_ligacao) * 1.5  # Pode ajustar esse fator se quiser

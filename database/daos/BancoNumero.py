@@ -10,35 +10,40 @@ class BancoNumero(BancoDeDados[Numero]):
 
     def salvar(self, numero : Numero) -> None: 
 
+        if self.numero_existe(numero.numero):
+            print("Número já está cadastrado no banco de dados")
+            return
+
         self.executar(
             """
-                INSERT INTO NUMEROS_TELEFONE (numero, saldo, cpf_cliente)
-                VALUES (?, ?, ?)
+            INSERT INTO NUMEROS_TELEFONE (numero, saldo, cpf_cliente)
+            VALUES (?, ?, ?)
             """,
             (numero.numero, numero.saldo, numero.cpf_proprieatario)
         )
-        self.commit()
 
 
     def buscar_por_cpf(self, cpf_cliente : str = '') -> List[Numero]:
 
-        resultados : list[Numero] = []
+        resultados: List[Numero] = []
 
-        self.executar_select("""
+        linhas = self.executar_select(
+            """
             SELECT numero, saldo, cpf_cliente, id_assinatura FROM NUMEROS_TELEFONE
             WHERE cpf_cliente = ?
             """,
             (cpf_cliente,)
         )
 
-        for linha in self.cursor.fetchall():
-            num = Numero(
-                numero = linha[0],
-                cpf_proprieatario = linha[2],
-                saldo = linha[1],
-                assinatura = None
-            )
-            resultados.append(num)
+        if linhas:
+            for linha in linhas:
+                num = Numero(
+                    numero=linha[0],
+                    cpf_proprieatario=linha[2],
+                    saldo=linha[1],
+                    assinatura=None  # Se quiser, você pode depois buscar o plano relacionado usando o id_assinatura
+                )
+                resultados.append(num)
 
         return resultados
     
@@ -52,3 +57,8 @@ class BancoNumero(BancoDeDados[Numero]):
             (numero,)
         )
         return linhas is not None and len(linhas) > 0
+    
+
+    def obter_numeros(self) -> list[Numero]:
+
+        pass

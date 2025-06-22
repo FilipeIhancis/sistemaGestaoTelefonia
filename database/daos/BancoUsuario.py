@@ -1,5 +1,4 @@
 from database.BancoDeDados import BancoDeDados, T
-from typing import List, Optional
 from models import *
 from datetime import datetime
 
@@ -11,6 +10,10 @@ class BancoUsuario(BancoDeDados[Usuario]):
 
     def salvar(self, usuario : Usuario):
 
+        if self.cpf_existe(usuario.cpf):
+            print("Usuário já está cadastrado no banco de dados")
+            return
+
         self.executar(
             """
                 INSERT INTO USUARIO (nome, cpf, email, senha, tipo)
@@ -18,7 +21,6 @@ class BancoUsuario(BancoDeDados[Usuario]):
             """,
             (usuario.nome, usuario.cpf, usuario.email, usuario.senha, usuario.tipo)
         )
-        self.commit()
 
 
     def cpf_existe(self, cpf : str) -> bool:
@@ -112,3 +114,73 @@ class BancoUsuario(BancoDeDados[Usuario]):
             (cpf, email)
         )
         return bool(resultado and len(resultado) > 0)
+    
+
+    def obter_usuarios(self) -> list[Usuario]:
+
+        usuarios: list[Usuario] = []
+
+        linhas = self.executar_select("""
+            SELECT nome, cpf, email, senha, tipo
+            FROM USUARIO
+        """)
+
+        for linha in linhas:
+            nome, cpf, email, senha, tipo = linha
+            usuario = Usuario(
+                nome=nome,
+                cpf=cpf,
+                email=email,
+                senha=senha,
+                data_registro=datetime.now(),
+                tipo=tipo
+            )
+            usuarios.append(usuario)
+
+        return usuarios
+    
+
+    def obter_clientes(self) -> list[Cliente]:
+        
+        clientes: list[Cliente] = []
+
+        linhas = self.executar_select("""
+            SELECT nome, cpf, email, senha
+            FROM USUARIO
+            WHERE tipo = 'CLIENTE'
+        """)
+
+        for linha in linhas:
+            nome, cpf, email, senha = linha
+
+            # Busca os números que pertencem a este cliente
+            numeros_cliente: list[Numero] = []
+            linhas_numeros = self.executar_select("""
+                SELECT numero, saldo
+                FROM NUMEROS_TELEFONE
+                WHERE cpf_cliente = ?
+            """, (cpf,))
+
+            for num_linha in linhas_numeros:
+                numero = Numero(
+                    numero=num_linha[0],
+                    cpf_proprieatario=cpf,
+                    saldo=num_linha[1],
+                    assinatura=None,
+                    mensagens=[],
+                    ligacoes=[]
+                )
+                numeros_cliente.append(numero)
+
+            cliente = Cliente(
+                nome=nome,
+                cpf=cpf,
+                email=email,
+                senha=senha,
+                data_registro=datetime.now(),  # Substitua caso tenha o campo correto
+                numeros=numeros_cliente
+            )
+
+            clientes.append(cliente)
+
+        return clientes

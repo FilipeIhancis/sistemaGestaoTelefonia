@@ -30,12 +30,13 @@ class BancoDeDados(ABC, Generic[T]):
         self._diretorio = novo_dir
 
 
-    def executar(self, query : str, params : tuple = ()) -> None:
+    def executar(self, query : str, params : tuple = ()) -> int | None:
         try:
             with sqlite3.connect(self.diretorio) as conn:
                 cursor = conn.cursor()
                 cursor.execute(query, params)
                 conn.commit()
+                return cursor.lastrowid
         except Exception as e:
             print(f"Erro ao executar query: {e}")
 

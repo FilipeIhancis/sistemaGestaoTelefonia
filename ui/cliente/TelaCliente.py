@@ -17,15 +17,27 @@ class TelaCliente(TelaUsuario):
         # Usando Ref para acessar o container (possibilita animações)
         self.numeros_expandiveis_ref = ft.Ref[ft.Container]()
         self.numeros_lista_ref = ft.Ref[ft.Column]()
-        self.__numeros_expandiveis = ft.Container(
+        self.numeros_expandiveis = ft.Container(
             content=ft.Column(ref=self.numeros_lista_ref, spacing=5), height=0, animate=ft.Animation(duration=300, 
             curve=ft.AnimationCurve.EASE_IN_OUT), clip_behavior=ft.ClipBehavior.HARD_EDGE,
             ref = self.numeros_expandiveis_ref, )
         
-        self.__faturas = PaginaFaturas(self)
-        self.__numeros = PaginaNumeros(self)
-        self.__adicionar_numero = PaginaAdicionarNumero(self)
+        self.faturas = PaginaFaturas(self)
+        self.numeros = PaginaNumeros(self)
+        self.adicionar_numero = PaginaAdicionarNumero(self)
 
+        self.numeros_usuario = [num.numero for num in self.bd.numeros.buscar_por_cpf(self.usuario.cpf)]
+    
+    @property
+    def numeros_usuario(self) -> list[str]:
+        return self._numeros_usuario
+    
+    @numeros_usuario.setter
+    def numeros_usuario(self, numeros : list[str]):
+        for num in numeros:
+            if not isinstance(num, str):
+                raise ValueError("Não é um número formato string")
+        self._numeros_usuario = numeros
     
     @property
     def adicionar_numero(self):

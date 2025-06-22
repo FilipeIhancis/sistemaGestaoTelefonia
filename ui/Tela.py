@@ -32,10 +32,12 @@ class Tela(TelaBase):
         # Campos de entrada
         email = ft.TextField(label='Email', text_align=ft.TextAlign.LEFT, width=200, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
         senha = ft.TextField(label='Senha', text_align=ft.TextAlign.LEFT, width=200, password = True, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
-        botao_entrar = ft.ElevatedButton(text='Entrar', width=200, disabled = True)
+        botao_entrar = self.criar_botao("Entrar")
+        botao_entrar.disabled = True
+        # botao_entrar = ft.ElevatedButton(text='Entrar', width=200, disabled = True)
 
         # Textos na tela
-        mensagem_login = ft.Text(value='Login', size=20)
+        mensagem_login = ft.Text(value='Login', size=20, weight=ft.FontWeight.BOLD)
         mensagem_erro = ft.Text(
             value='Usuário ou senha inválidos.',
             color=ft.Colors.RED,  # Corrigido: ft.Colors -> ft.colors
@@ -72,14 +74,28 @@ class Tela(TelaBase):
         senha.on_change = validar
         botao_entrar.on_click = logar
 
+
+
         # Layout final (formatação da tela)
         self.page.add(
             ft.Row(controls=[
-                    ft.Column(
-                        controls=[mensagem_login, email, senha, botao_entrar, mensagem_erro],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )],
+                ft.Container(padding=ft.padding.all(35),
+                             border=ft.border.all(1, ft.Colors.WHITE),
+                             border_radius=10, bgcolor=self.cor_dialogo,
+                             content=
+                            ft.Column(
+                                controls=[ft.Container(content=mensagem_login, padding=ft.padding.only(bottom=20)),
+                                        email,
+                                        senha,
+                                        botao_entrar,
+                                        mensagem_erro
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                spacing=15
+                            )
+                    ),
+                ],
                 alignment=ft.MainAxisAlignment.CENTER )
         )
 

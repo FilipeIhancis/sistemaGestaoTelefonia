@@ -147,6 +147,13 @@ class TelaBase():
         self.conteudo_pagina.update()
 
 
+    def formatarNumero(self, numero : str) -> str:
+        ddd = numero[:2]
+        parte1 = numero[2:7]
+        parte2 = numero[7:]
+        return f"({ddd}) {parte1}-{parte2}"
+
+
     def criar_botao(self, texto:str='', icone : ft.Icon=None, funcao=None, cor:bool = True) -> ft.ElevatedButton:
         if cor:
             cor_botao = self.cor_botao

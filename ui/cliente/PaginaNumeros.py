@@ -61,6 +61,7 @@ class PaginaNumeros(SubTela):
     
     def pagina_meus_numeros(self) -> None:
         
+        self.numeros_usuario = [num.numero for num in self.tela.bd.numeros.buscar_por_cpf(self.usuario.cpf)]
         container = self.tela.numeros_expandiveis_ref.current
         coluna = self.tela.numeros_lista_ref.current
 
@@ -68,18 +69,19 @@ class PaginaNumeros(SubTela):
             # Expandir
             coluna.controls = [
                 ft.TextButton(
-                    text=num, icon=ft.Icons.CHEVRON_RIGHT,
-                    on_click= self.pagina_numero, width=200, height=40,
+                    text=self.tela.formatarNumero(num),
+                    icon=ft.Icons.CHEVRON_RIGHT,
+                    on_click= self.pagina_numero,
+                    data = num,
+                    width=200, height=40,
                     style = ft.ButtonStyle(
-                        padding = 5,
-                        alignment = ft.alignment.center_left,
-                        shape = ft.RoundedRectangleBorder(radius=4),
+                        padding = 2, alignment = ft.alignment.center_left, shape = ft.RoundedRectangleBorder(radius=4),
                         bgcolor= ft.Colors.with_opacity(0.04, ft.Colors.ON_SURFACE)
                     )
                 )
-                for num in self.tela.numeros_fake
+                for num in self.tela.numeros_usuario
             ]
-            container.height = len(self.tela.numeros_fake) * 45 + 10
+            container.height = len(self.tela.numeros_usuario) * 45 + 10
         else:
             # Colapsar
             container.height = 0
@@ -87,7 +89,7 @@ class PaginaNumeros(SubTela):
         container.update()
     
     
-    def pagina_numero(self, e):
+    def pagina_numero(self, e : ft.ControlEvent = None):
         
         def card_titulo(texto : str = '', icone : ft.Icon = None) -> ft.Row:
             return ft.Row([ft.Icon(icone, size = 24), ft.Text(texto, size = 18, weight = ft.FontWeight.BOLD)])
@@ -103,7 +105,7 @@ class PaginaNumeros(SubTela):
             return ft.Row([botao], alignment=ft.MainAxisAlignment.END)
 
         cabecalho = ft.Container(content=ft.Row([
-            ft.Column([ ft.Text(e.control.text, size=22, weight=ft.FontWeight.BOLD),
+            ft.Column([ ft.Text(self.tela.formatarNumero(e.control.data), size=22, weight=ft.FontWeight.BOLD),
                         ft.Row([ft.Text("Nome do plano", size=16), self.tela.criar_botao("Ver detalhes", cor=False, funcao=self.detalhes_plano)], spacing = 10),
                         ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),ft.Text("Ativo desde: XX/XX/2025")], spacing = 5),
                         ft.Row([ft.Icon(ft.Icons.DONE), ft.Text("Status: Ativa")], spacing = 5),
