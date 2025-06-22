@@ -80,8 +80,26 @@ def adicionar_coluna():
     banco.usuarios.mod()
 
 
+def adicionar_solicitacoes():
+
+    banco = GerenciadorBanco(diretorio_database)
+
+    usuario1 = banco.usuarios.buscar_usuario_cpf(cpf='70072806680')
+
+    banco.solicitacoes.salvar(
+        Solicitacao(
+            categoria = 'Solicitação',
+            assunto = 'Solicitação de novo número',
+            status = False,
+            cliente_solicitante = usuario1,
+            observacoes = 'Plano: 3, Recarga Inicial: R$ 10.00'
+        )
+    )
+
+
 if __name__ == "__main__":
 
     padrao()
     #testar_db()
     #adicionar_coluna()
+    #adicionar_solicitacoes()

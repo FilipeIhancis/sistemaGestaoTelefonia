@@ -3,6 +3,7 @@ from database.daos.BancoUsuario import BancoUsuario
 from database.daos.BancoAssinatura import BancoAssinatura
 from database.daos.BancoPlano import BancoPlano
 from database.daos.BancoFatura import BancoFatura
+from database.daos.BancoSolicitacao import BancoSolicitacao
 from models import *
 
 class GerenciadorBanco:
@@ -14,3 +15,4 @@ class GerenciadorBanco:
         self.assinaturas = BancoAssinatura(diretorio)
         self.planos = BancoPlano(diretorio)
         self.faturas = BancoFatura(diretorio)
+        self.solicitacoes = BancoSolicitacao(diretorio)

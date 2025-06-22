@@ -3,10 +3,6 @@ from ui.base.TelaBase import TelaBase
 from ui.cliente.TelaCliente import TelaCliente
 from ui.administrador.TelaAdministrador import TelaAdministrador
 
-# Credenciais cadastradas (simulação)
-email_cadastrado = ["filipe@gmail.com", "admin@gmail.com", "admin"]
-senha_cadastrada = "12345"
-
 
 class Tela(TelaBase):
 
@@ -25,8 +21,8 @@ class Tela(TelaBase):
         self.page.clean()
         self.page.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.page.theme_mode = ft.ThemeMode.DARK
-        self.page.window_width = 800
-        self.page.window_height = 800
+        self.page.window_width = 1000
+        self.page.window_height = 1000
         self.page.window_resizable = True
 
         # Campos de entrada

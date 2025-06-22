@@ -4,6 +4,7 @@ from ui.cliente.PaginaFaturas import PaginaFaturas
 from ui.cliente.PaginaNumeros import PaginaNumeros
 from ui.cliente.PaginaAdicionarNumero import PaginaAdicionarNumero
 from models.cliente import Cliente
+from models.solicitacao import Solicitacao
 
 
 class TelaCliente(TelaUsuario):
@@ -91,6 +92,7 @@ class TelaCliente(TelaUsuario):
         self.__menu_lateral = coluna
 
 
+
     def pagina_principal(self) -> None:
         
         self.page.clean()   # Limpa a tela
@@ -163,21 +165,49 @@ class TelaCliente(TelaUsuario):
                                  controls = [ft.Text("Dúvidas sobre upgrade")]),           
             ])
         )
+        
+        assunto = ft.TextField(label = "Assunto", border = ft.border.all(1, ft.Colors.GREY), border_color=ft.Colors.GREY)
+        obs = ft.TextField(label="Observações", multiline=True, min_lines=3,border=ft.border.all(1, ft.Colors.GREY), border_color=ft.Colors.GREY)
+        categoria = ft.Dropdown( label = "Categoria", border_color = ft.Colors.GREY, options=[
+                            ft.dropdown.Option("Dúvida"),ft.dropdown.Option("Erro"),ft.dropdown.Option("Solicitação")
+                    ])
+
+        def solicitar(e : ft.ControlEvent = None) -> None:
+
+            if not (assunto.value and obs.value and categoria.value):
+                self.page.open(
+                    ft.AlertDialog(
+                        title=ft.Text("Erro", weight=ft.FontWeight.BOLD),
+                        content=ft.Text("Preencha todos os campos corretamente para enviar a sua mensagem para o suporte."),
+                        bgcolor=self.cor_dialogo
+                    )
+                )
+                self.page.update()
+            else:
+                self.bd.solicitacoes.salvar(Solicitacao(
+                    categoria = categoria.value,
+                    cliente_solicitante=self.usuario,
+                    assunto=assunto.value,
+                    observacoes=obs.value
+                ))
+                self.page.open(
+                    ft.AlertDialog(
+                        title=ft.Text("Mensagem de contato enviada"),
+                        content=ft.Text("A equipe de suporte irá de ajudar assim que possível."),
+                        bgcolor=self.cor_dialogo
+                    )
+                )
+                self.page.update()
 
         formulario = ft.Container(
             content = ft.Column([
-                    ft.Text("Ajuda específica", weight = ft.FontWeight.BOLD, size = 18),
-                    ft.TextField(label = "Assunto", border = ft.border.all(1, ft.Colors.GREY), border_color=ft.Colors.GREY),
-                    ft.Dropdown(
-                        label = "Categoria", border_color = ft.Colors.GREY, options=[
-                            ft.dropdown.Option("Dúvida"),ft.dropdown.Option("Erro"),ft.dropdown.Option("Solicitação")
-                        ]
-                    ),
-                    ft.TextField(label="Observações", multiline=True, min_lines=3,border=ft.border.all(1, ft.Colors.GREY),
-                                 border_color=ft.Colors.GREY),
-                    self.criar_botao("Enviar solicitação")
+                    ft.Row([ft.Icon(ft.Icons.HELP_OUTLINE),ft.Text("Mensagem para suporte", weight = ft.FontWeight.BOLD, size = 18)], spacing=5),
+                    assunto,
+                    categoria,
+                    obs,
+                    self.criar_botao("Enviar", funcao = solicitar)
                 ]), 
-                padding = 20, border = ft.border.all(1), border_radius=10, expand = True, alignment=ft.alignment.top_left
+                padding = 30, border = ft.border.all(1), border_radius=10, expand = True, alignment=ft.alignment.top_left
         )
 
         self.atualizar_pagina(

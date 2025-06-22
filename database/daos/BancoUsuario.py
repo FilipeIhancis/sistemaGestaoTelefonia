@@ -25,7 +25,7 @@ class BancoUsuario(BancoDeDados[Usuario]):
     def mod(self):
 
         self.executar("""
-        ALTER TABLE SOLICITACOES ADD COLUMN status INTEGER DEFAULT 1;
+        ALTER TABLE SOLICITACOES ADD COLUMN observacoes;
         """)
 
 
@@ -79,6 +79,30 @@ class BancoUsuario(BancoDeDados[Usuario]):
             tipo = linha[4]
 
             return Usuario(nome=nome, cpf=cpf, email=email, senha=senha, tipo=tipo, data_registro=datetime.now())
+        else:
+            return None
+        
+    
+    def buscar_usuario_cpf(self, cpf : str) -> Usuario:
+
+        resultado = self.executar_select(
+            """
+            SELECT nome, cpf, email, senha, tipo FROM USUARIO
+            WHERE cpf = ?
+            """,
+            (cpf,)
+        )
+
+        if resultado and len(resultado) > 0:
+            linha = resultado[0]
+            nome = linha[0]
+            email = linha[2]
+            senha = linha[3]
+            tipo = linha[4]
+            return Usuario(
+                nome=nome, cpf=cpf, email=email, senha=senha,
+                tipo=tipo, data_registro=datetime.now()
+            )
         else:
             return None
         

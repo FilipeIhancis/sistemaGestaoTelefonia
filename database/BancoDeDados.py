@@ -123,7 +123,8 @@ class BancoDeDados(ABC, Generic[T]):
                 cpf_cliente TEXT NOT NULL,
                 assunto TEXT NOT NULL,
                 categoria TEXT NOT NULL,
-                status TEXT CHECK(ativa IN ('True', 'False'))
+                status TEXT CHECK(ativa IN ('True', 'False')),
+                observacoes TEXT NOT NULL,
                 FOREIGN KEY (cpf_cliente) REFERENCES USUARIO(cpf)
             );
         """)

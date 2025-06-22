@@ -52,7 +52,6 @@ class TelaUsuario(TelaBase, ABC):
     def paginas_menu_lateral(self, e : ft.ControlEvent) -> None:
         pass
 
-
     def sair(self) -> None:
 
         alerta_dialogo = None 
@@ -81,4 +80,65 @@ class TelaUsuario(TelaBase, ABC):
         )
         self.page.dialog = alerta_dialogo
         self.page.open(alerta_dialogo)
+        self.page.update()
+
+
+    def confirmar_identidade(self, e : ft.ControlEvent = None, titulo : str = 'Confirmar', ao_confirmar : callable = None, ao_cancelar : callable = None):
+
+        dialogo = None
+        senha = self.textField(tamanho=130, texto=True)
+        confirmar_senha = self.textField(tamanho=130, texto=True)
+        senha.password = True
+        confirmar_senha.password = True
+
+        confirmar = ft.TextButton("Confirmar", disabled=True)
+        mensagem_erro = ft.Text('Senha incorreta! Tente novamente.', color=ft.Colors.RED, visible=False)
+
+        def verificar_campos(e = None):
+            nonlocal senha
+            nonlocal confirmar_senha
+            nonlocal confirmar
+            confirmar.disabled = not (senha.value and confirmar_senha.value)
+            self.page.update()
+
+        def fechar_dialogo(e=None):
+            nonlocal dialogo
+            self.page.close(dialogo)
+            self.page.update()
+
+        def confirmar_acao(e=None):
+            if (self.bd.usuarios.login(self.usuario.email, senha.value) and senha.value == confirmar_senha.value):
+                fechar_dialogo()
+                if ao_confirmar:
+                    ao_confirmar()
+            else:
+                mensagem_erro.visible = True
+                self.page.update()
+
+        def cancelar_acao(e=None):
+            fechar_dialogo()
+            if ao_cancelar:
+                ao_cancelar()
+
+        senha.on_change = verificar_campos
+        confirmar_senha.on_change = verificar_campos
+
+        # Define o que o botão "Solicitar" vai fazer
+        confirmar.on_click = confirmar_acao
+
+        # Cria a caixa de diálogo padrão
+        dialogo = ft.AlertDialog(
+            modal=True, title=ft.Text(titulo, weight=ft.FontWeight.BOLD), bgcolor=self.cor_dialogo,
+            content=ft.Container(width=400, height=170, padding=20,
+                content= ft.Column([
+                    ft.Text("Essa ação requer confirmação de identidade."),
+                    ft.Row([ft.Text("Senha"), senha], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    ft.Row([ft.Text("Confirme sua senha"), confirmar_senha], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                    mensagem_erro
+                ], spacing=15)
+            ),
+            actions=[confirmar, ft.TextButton("Cancelar", on_click=cancelar_acao)]
+        )
+        self.page.dialog = dialogo
+        self.page.open(dialogo)
         self.page.update()

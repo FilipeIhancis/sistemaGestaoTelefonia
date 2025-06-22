@@ -1,5 +1,7 @@
 import flet as ft
 from ui.base.SubTela import SubTela
+from models.solicitacao import Solicitacao
+from models.plano import Plano
 
 
 class PaginaAdicionarNumero(SubTela):
@@ -10,12 +12,13 @@ class PaginaAdicionarNumero(SubTela):
 
     def pagina_adicionar_numero(self) -> None:
 
-        taxa_solicitacao = 5.0
+        nome_plano = ''
+        valor_recarga = 0
+        planos_container = []
+        botao_solicitar = self.tela.criar_botao('Solicitar Número')
 
         cabecalho = ft.Text("Adicionar novo número", size=22, weight=ft.FontWeight.BOLD)
 
-        plano_selecionado = ft.Text("")
-        recarga_valor = ft.Text("")
 
         # Radio group de recarga
         recarga_group = ft.RadioGroup(
@@ -28,74 +31,105 @@ class PaginaAdicionarNumero(SubTela):
 
         def selecionar_plano(e : ft.ControlEvent = None) -> None:
 
-            for plano in self.tela.planos_fake:
+            for plano in planos_container:
                 plano.border = ft.border.all(1)
             
-            # Botão selecionado recebe destaque
+            # Botão selecionado recebe destaque amarelo
             e.control.border = ft.border.all(2, ft.Colors.YELLOW_300)
             e.control.bgcolor = ft.Colors.with_opacity(0.1, self.tela.cor_cartao_1)
-            plano_selecionado.value = f"Plano selecionado: {e.control.data}"
+
+            nonlocal nome_plano
+            nome_plano = e.control.data     # nome do plano que deve adicionar
             self.tela.page.update()
 
-        def solicitar_numero(e):
-            valor_recarga = recarga_group.value
-            plano = plano_selecionado.value
-            recarga_valor.value = f"Recarga escolhida: R$ {valor_recarga}, {plano}"
+        def salvar_solicitacao(e : ft.ControlEvent = None) -> None:
+
+            self.tela.bd.solicitacoes.salvar(
+                Solicitacao(
+                    categoria='Solicitação', assunto='Solicitação de novo número',
+                    observacoes=f'Plano: {nome_plano} - Recarga inicial: R$ {valor_recarga}',
+                    cliente_solicitante=self.tela.usuario
+                )
+            )
+            
+            self.tela.page.open(
+                ft.AlertDialog(
+                    title=ft.Text("Número solicitado"),
+                    content=ft.Text(f"Número de plano '{nome_plano}' solicitado com sucesso. Um administrador irá criar o número para você."),
+                    on_dismiss = lambda e: self.pagina_adicionar_numero(),
+                    bgcolor=self.tela.cor_dialogo
+                )
+            )
             self.tela.page.update()
 
-        # PLANOS FAKE
-        plano1 = self.criar_cartao_plano('Plano 1', 1000, 100,50,39.90,30)
-        plano2 = self.criar_cartao_plano('Plano 2', 2000, 120,50,49.90,30)
-        plano3 = self.criar_cartao_plano('Plano 3', 3500, 150,70,69.90,30)
+        def solicitar_numero(e : ft.ControlEvent = None) -> None:
+            
+            valor_recarga = float(recarga_group.value)
 
-        plano1.on_click = selecionar_plano
-        plano2.on_click = selecionar_plano
-        plano3.on_click = selecionar_plano
+            if nome_plano == '' or valor_recarga == 0:
+                self.tela.page.open(
+                    ft.AlertDialog(
+                        title=ft.Text("Erro"),
+                        content=ft.Text("Selecione o plano e a recarga inicial para solicitar um novo número."),
+                        bgcolor=self.tela.cor_dialogo
+                    )
+                )
+            else:
+                self.tela.confirmar_identidade(titulo='Confirme sua senha', ao_confirmar = salvar_solicitacao)
+                
 
-        self.tela.planos_fake = [plano1, plano2, plano3]
+        # OBTÉM OS PLANOS VIA BANCO DE DADOS
+        planos = self.tela.bd.planos.obter_planos()
+        for plano in planos:
+            plano_card = self.criar_cartao_plano(plano)
+            plano_card.on_click = selecionar_plano
+            planos_container.append(plano_card)
 
-        self.tela.atualizar_pagina( ft.Column([
-            cabecalho, ft.Divider(thickness=2),
-            ft.Container( content=ft.Column([
+        botao_solicitar.on_click = solicitar_numero
+
+        self.tela.atualizar_pagina(
+            ft.Column([
+                cabecalho,
+                ft.Divider(thickness=2),
+                ft.Container( content=ft.Column([
                     ft.Text("Escolha seu plano", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row([plan for plan in self.tela.planos_fake], alignment=ft.MainAxisAlignment.START),
-                ]),
-                padding=20, border=ft.border.all(1), border_radius=10, margin=10
-            ),
-            ft.Container(
-                content=ft.Column([
-                    ft.Text("Recarga inicial", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row([ ft.Text("Valor: "), recarga_group ]),
-                    ft.Row([ft.Text("Taxa de solicitação: ", weight=ft.FontWeight.BOLD, size=18), ft.Text(f"R$ {str(taxa_solicitacao)}", size=18)], spacing=5),
-                    ft.Row([ft.Text("Total: ", weight=ft.FontWeight.BOLD, size = 18), ft.Text(f"R$ {float(recarga_group.value) + taxa_solicitacao}")], spacing=5)
-                ]),
-                padding=20, border=ft.border.all(1), border_radius=10, margin=10
-            ),
-            ft.Row([self.tela.criar_botao('Solicitar Número', funcao=solicitar_numero),
-                    self.tela.criar_botao('Cancelar', funcao=self.tela.pagina_principal())
-            ]),
-            plano_selecionado,
-            recarga_valor],
+                    ft.Column([ft.Row([plan for plan in planos_container], alignment=ft.MainAxisAlignment.START, wrap=True)]),
+                    ]),
+                    padding=20, border=ft.border.all(1), border_radius=10, margin=10
+                ),
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text("Recarga inicial", size=18, weight=ft.FontWeight.BOLD),
+                        ft.Row([ ft.Text("Valor: "), recarga_group ])
+                    ]),
+                    padding=20, border=ft.border.all(1), border_radius=10, margin=10
+                ),
+                botao_solicitar
+            ],
             scroll=ft.ScrollMode.AUTO
             )
         )
 
-    def criar_cartao_plano(self, nome:str, dados:int, minutos_lig:int, msg:int, valor:float, num_lig:int) -> ft.Container:
+    def criar_cartao_plano(self, plano : Plano) -> ft.Container:
 
         def linha(texto1:str, texto2:str) -> ft.Row:
             return ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[ft.Text(str(texto1), weight=ft.FontWeight.BOLD), ft.Text(str(texto2))])
         
-        return ft.Container(
-            border = ft.border.all(1), border_radius = 10, width=300, padding = 8, tooltip="Clique para selecionar", data = nome,
+        return ft.Container (
+            border = ft.border.all(1), border_radius = 10, width=315, padding = 8, tooltip="Clique para selecionar", data = plano.nome,
             content = ft.Column(
-                [ft.Container(padding = 10, bgcolor=self.tela.cor_cartao_2, width=float('inf'), alignment=ft.alignment.center,
-                              content=ft.Row([ft.Text(nome, weight=ft.FontWeight.BOLD, size=17)], alignment=ft.MainAxisAlignment.CENTER)),
+                [ft.Container(padding = 10, bgcolor=self.tela.cor_cartao_2, width=float('inf'),
+                              content=ft.Row([ft.Text(plano.nome, weight=ft.FontWeight.BOLD, size=17)], alignment=ft.MainAxisAlignment.CENTER)),
                 ft.Container(padding = ft.padding.only(left=20,right=20,bottom=20,top=5), content=
-                            ft.Column([ linha('Dados de Internet', str(dados)+' MB'),
-                            linha('Máximo de ligações', str(num_lig)),
-                            linha('Minutos de ligação', str(minutos_lig)),
-                            linha('Máximo de mensagens', str(msg)),
-                            linha('Valor Mensal', 'R$ ' + str(valor))],
+                            ft.Column([
+                                linha('Dados de Internet', str(plano.dados_mb)+' MB'),
+                                linha('Máximo de ligações', str(plano.maximo_ligacao)),
+                                linha('Minutos máx. de ligação', str(plano.minutos_max_ligacao)),
+                                linha('Preço min. ligação extra (un.)', str(plano.pacote_minutos_unitario)),
+                                linha('Máximo de mensagens', str(plano.maximo_mensagens)),
+                                linha('Preço mensagens extra (un.)', str(plano.pacote_mensagem_unitario)),
+                                linha('Valor Mensal', 'R$ ' + str(plano.preco))
+                            ],
                             spacing = 10)
                 )]
             )
