@@ -1,45 +1,38 @@
 import flet as ft
 from ui.base.SubTela import SubTela
 from ui.administrador.PaginaCadastros import PaginaCadastro
+from models.plano import Plano
 
 class PaginaPlanos(SubTela):
 
 
     def __init__(self, tela_admin):
         super().__init__(tela=tela_admin)
-        self.cadastros = PaginaCadastro(tela_admin=tela_admin)
+        self.cadastros = PaginaCadastro(tela_admin = tela_admin)
 
 
     def pagina_planos(self) -> None:
+
+        # Obtém todos os planos do banco de dados:
+        planos = self.tela.bd.planos.obter_planos()
 
         cabecalho = ft.Container(content=ft.Row([
             ft.Column([ft.Text("Planos", weight=ft.FontWeight.BOLD, size = 22)], alignment=ft.alignment.top_left),
             ft.Column([self.tela.criar_botao("Adicionar plano", icone=ft.Icons.ADD, funcao = self.cadastros.cadastrar_plano)], alignment=ft.alignment.top_right)
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN))
         
-        def editar(e):
-            pass
         def excluir(e):
             pass    
         
-        dados = [
-            {"nome": "PLANO 1", "valor": "29,30", "dados": 64, "recarga": "15", "max_ligacoes": 10, "max_mensagens": 100, "clientes_usuarios": "45"},
-            {"nome": "PLANO 2", "valor": "39,30", "dados": 90, "recarga": "15", "max_ligacoes": 15, "max_mensagens": 100, "clientes_usuarios": "25"},
-            {"nome": "PLANO 3", "valor": "49,30", "dados": 100, "recarga": "15", "max_ligacoes": 15, "max_mensagens": 150, "clientes_usuarios": "15"}
-        ]
+        cartoes_planos = ft.Column(expand = True, controls=[
+            ft.Row(wrap=True, spacing=15, run_spacing=10, controls = [ self.criar_cartao_plano(plano,excluir) for plano in planos])
+            ]
+        )
 
-        planos = ft.Column(expand = True, controls=[
-            ft.Row(wrap=True, spacing=15, run_spacing=10, controls=[
-                self.criar_cartao_plano( d["nome"], d["valor"], d["dados"], d["recarga"],
-                                        d["max_ligacoes"], d["max_mensagens"], d["clientes_usuarios"],
-                                        self.editar_plano , excluir)
-                for d in dados])
-            ])
-
-        self.tela.atualizar_pagina( ft.Column( controls=[cabecalho, ft.Divider(thickness=2), planos], scroll=ft.ScrollMode.AUTO) )
+        self.tela.atualizar_pagina( ft.Column( controls=[cabecalho, ft.Divider(thickness=2), cartoes_planos], scroll=ft.ScrollMode.AUTO) )
 
 
-    def criar_cartao_plano(self, nome_plano, valor, dados_internet, valor_recarga, max_ligacoes, max_mensagens, clientes_usuarios, on_editar, on_excluir) -> ft.Container:
+    def criar_cartao_plano(self, plano : Plano, on_excluir : callable) -> ft.Container:
 
         def linha(label, valor):
             return ft.Row(
@@ -50,34 +43,33 @@ class PaginaPlanos(SubTela):
                 ]
             )
         return ft.Container(
-            width=260, border=ft.border.all(1), border_radius=6, padding=8,
-            content=ft.Column([
-                    # Cabeçalho
-                    ft.Container(
-                        bgcolor=self.tela.cor_cartao_2, padding=ft.padding.all(6), alignment=ft.alignment.center,
-                        content=ft.Text(nome_plano, color=ft.Colors.WHITE, size=14, weight=ft.FontWeight.BOLD),
-                    ),
-                    # Informações
-                    ft.Container(
-                        bgcolor=self.tela.cor_cartao_1, border_radius=4, padding=ft.padding.all(8),
-                        content=ft.Column([
-                                linha("VALOR:", f"R$ {valor}"),
-                                linha("INTERNET:", f"{dados_internet} GB"),
-                                linha("RECARGA:", f"R$ {valor_recarga}"),
-                                linha("LIGAÇÕES:", str(max_ligacoes)),
-                                linha("MENSAGENS:", str(max_mensagens)),
-                                linha("USUÁRIOS:", str(clientes_usuarios)),
-                            ], spacing=10
-                        )
-                    ),
-                    # Botões
-                    ft.Row([
-                            self.tela.criar_botao("Editar", funcao=on_editar),
-                            self.tela.criar_botao("Excluir", funcao=on_excluir),
-                        ], alignment=ft.MainAxisAlignment.CENTER, spacing=8
+            width=260, border=ft.border.all(1), border_radius=6, padding=8,content=
+            ft.Column(spacing=10, controls=[
+                # Cabeçalho
+                ft.Container(
+                    bgcolor=self.tela.cor_cartao_2, padding=ft.padding.all(6), alignment=ft.alignment.center,
+                    content=ft.Text(plano.nome, color=ft.Colors.WHITE, size=14, weight=ft.FontWeight.BOLD),
+                ),
+                # Informações
+                ft.Container(
+                    bgcolor=self.tela.cor_cartao_1, border_radius=4, padding=ft.padding.all(8),
+                    content=ft.Column([
+                            linha("VALOR:", f"R$ {plano.preco}"),
+                            linha("INTERNET:", f"{plano.dados_mb} GB"),
+                            linha("MINUTOS MÁX. LIGAÇÃO:", str(plano.maximo_ligacao)),
+                            linha("QTD. MÁX LIGAÇÕES", str(plano.maximo_ligacao)),
+                            linha("QTD. MÁX MENSAGENS:", str(plano.maximo_mensagens)),
+                            linha("PACOTE DE MENSAGEM UN.", str(plano.pacote_mensagem_unitario)),
+                            linha("PACOTE MINUTOS DE LIGAÇÃO UN.", str(plano.pacote_minutos_unitario))
+                        ], spacing=10
                     )
-                ], spacing=10
-            )
+                ),
+                # Botões
+                ft.Row(alignment=ft.MainAxisAlignment.CENTER, spacing=8, controls=[
+                        self.tela.criar_botao("Editar", funcao = self.editar_plano),
+                        self.tela.criar_botao("Excluir", funcao = on_excluir) ]
+                )
+            ])
         )
     
     def editar_plano(self, e = None) -> None:

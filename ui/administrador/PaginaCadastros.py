@@ -1,5 +1,7 @@
 import flet as ft
 from ui.base.SubTela import SubTela
+from models.usuario import Usuario
+from datetime import datetime
 
 class PaginaCadastro(SubTela):
 
@@ -9,24 +11,55 @@ class PaginaCadastro(SubTela):
 
     def cadastrar_cliente(self, e : ft.ControlEvent = None):
 
-        cabecalho = ft.Text("Cadastro de novo cliente", size=22, weight=ft.FontWeight.BOLD)
+        cpf = self.tela.textField(tamanho=200, inteiro=True)
+        nome = self.tela.textField(tamanho=200, texto=True)
+        email = self.tela.textField(tamanho=200, texto=True)
+        senha = ft.Text("senhaRandom")
+        mensagem_erro = ft.Text("Dados inválidos. Verifique se o CPF já possui cadastro no sistema.", color=ft.Colors.RED, visible=False)
 
         cadastrar = self.tela.criar_botao('Cadastrar')
         cadastrar.disabled = True
 
-        def validar(e=None):
-            # Só habilita se ambos os campos estiverem preenchidos
+        def adicionar(e : ft.ControlEvent = None) -> None:
+            try:
+                cliente = Usuario(nome.value, cpf.value, email.value, senha.value, datetime.now(), 'CLIENTE')
+                if (self.tela.bd.usuarios.adicionar_cliente(usuario = cliente)):
+                    mensagem_erro.visible = False
+                    self.tela.page.update()
+                    self.tela.page.open(
+                        ft.AlertDialog(
+                            title = ft.Text("Cliente adicionado com sucesso"),
+                            alignment=ft.alignment.center,
+                            bgcolor = self.tela.cor_dialogo
+                        )
+                    )
+                else:
+                    mensagem_erro.visible = True
+                    self.tela.page.update()
+
+            except ValueError:
+                mensagem_erro.visible = True
+                self.tela.page.update()
+
+        def validar(e : ft.ControlEvent = None) -> None:
             cadastrar.disabled = not (cpf.value.strip() and email.value.strip())
             self.tela.page.update()
 
-        cpf = ft.TextField(width=200, on_change=validar, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
-        email = ft.TextField(width=200, on_change=validar, border_color=ft.Colors.WHITE, focused_border_color=ft.Colors.WHITE)
-        senha = ft.Text("senhaRandom")
+        cadastrar.on_click = adicionar
+        cpf.on_change = validar
+        email.on_change = validar
+        nome.on_change = validar
 
-        campo = ft.Container( border=ft.border.all(1), border_radius=6, padding=10, expand=True, 
+        cabecalho = ft.Text("Cadastro de novo cliente", size=22, weight=ft.FontWeight.BOLD)
+
+        campo = ft.Container( border=ft.border.all(1), border_radius=6, padding=ft.padding.all(25), expand=True, 
             content=ft.Column([
                     ft.Row(
-                        [ft.Text('CPF', weight=ft.FontWeight.BOLD), cpf,],
+                        [ft.Text('CPF CLIENTE', weight=ft.FontWeight.BOLD), cpf,],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER
+                    ),
+                    ft.Row(
+                        [ft.Text('NOME CLIENTE', weight=ft.FontWeight.BOLD), nome,],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER
                     ),
                     ft.Row(
@@ -34,13 +67,11 @@ class PaginaCadastro(SubTela):
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
                     ft.Row(
-                        [ft.Text('SENHA', weight=ft.FontWeight.BOLD), senha],
+                        [ft.Text('SENHA (RANDÔMICA)', weight=ft.FontWeight.BOLD), senha],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
-                    ft.Row(
-                        [cadastrar, self.tela.criar_botao('Cancelar')],
-                        spacing=10, alignment=ft.MainAxisAlignment.END,
-                    )
+                    mensagem_erro,
+                    ft.Row( [cadastrar], spacing=10, alignment=ft.MainAxisAlignment.END )
                 ], spacing=15, width=500
             )
         )

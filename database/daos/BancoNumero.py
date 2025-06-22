@@ -1,5 +1,6 @@
 from database.BancoDeDados import BancoDeDados, T
 from typing import List, Optional
+from database.daos.BancoAssinatura import BancoAssinatura
 from models import *
 
 class BancoNumero(BancoDeDados[Numero]):
@@ -62,3 +63,42 @@ class BancoNumero(BancoDeDados[Numero]):
     def obter_numeros(self) -> list[Numero]:
 
         pass
+
+
+    def obter_numero(self, num : str) -> Numero:
+
+        # IMPLEMENTAR MENSAGENS E LIGAÇÕES AQUI 
+
+        resultado = self.executar_select(
+            """
+            SELECT numero, saldo, cpf_cliente, id_assinatura
+            FROM NUMEROS_TELEFONE
+            WHERE numero = ?
+            """,
+            (num,)
+        )
+
+        if resultado:
+            linha = resultado[0]
+            numero_str = linha[0]
+            saldo = linha[1]
+            cpf_cliente = linha[2]
+            id_assinatura = linha[3]
+
+            assinatura = None
+            if id_assinatura is not None:
+                # Busca a assinatura
+                assinatura = BancoAssinatura(self.diretorio).obter_assinatura(Numero(numero=numero_str))
+
+            numero_obj = Numero(
+                numero=numero_str,
+                cpf_proprieatario=cpf_cliente,
+                saldo=saldo,
+                assinatura=assinatura,
+                mensagens=None,
+                ligacoes=None
+            )
+
+            return numero_obj
+
+        return None

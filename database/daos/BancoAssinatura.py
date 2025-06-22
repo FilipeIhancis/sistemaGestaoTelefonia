@@ -63,3 +63,89 @@ class BancoAssinatura(BancoDeDados[Usuario]):
             """,
             (id_assinatura, numero)
         )
+
+
+    def obter_assinatura(self, numero: Numero) -> Assinatura:
+
+        resultado = self.executar_select(
+            """
+            SELECT id_assinatura FROM NUMEROS_TELEFONE WHERE numero = ?
+            """,
+            (numero.numero,)
+        )
+
+        if resultado and resultado[0][0] is not None:
+            id_assinatura = resultado[0][0]
+
+            # Agora busca os dados da assinatura
+            dados_assinatura = self.executar_select(
+                """
+                SELECT id_plano, data_assinatura, ativa FROM ASSINATURAS WHERE id = ?
+                """,
+                (id_assinatura,)
+            )
+
+            if dados_assinatura:
+                id_plano, data_assinatura_str, ativa_str = dados_assinatura[0]
+
+                # Busca o Plano correspondente
+                plano = self.obter_plano_via_id(id_plano)
+
+                assinatura = Assinatura(
+                    plano=plano,
+                    data_assinatura=datetime.fromisoformat(data_assinatura_str),
+                    ativa=(ativa_str == 'True')
+                )
+                return assinatura
+
+        return None
+    
+    
+    def obter_plano_via_id(self, id_plano: int) -> Plano | None:
+        
+        resultado = self.executar_select(
+            """
+            SELECT nome, dados_mb, preco, maximo_mensagens, maximo_ligacao,
+                minutos_max_ligacao, pacote_mensagem_unitario, pacote_minutos_unitario
+            FROM PLANOS
+            WHERE id = ?
+            """,
+            (id_plano,)
+        )
+        if resultado:
+            linha = resultado[0]
+            plano = Plano(
+                nome=linha[0],
+                dados_mb=linha[1],
+                preco=linha[2],
+                maximo_mensagens=linha[3],
+                maximo_ligacao=linha[4],
+                minutos_max_ligacao=linha[5],
+                pacote_mensagem_unitario=linha[6],
+                pacote_minutos_unitario=linha[7]
+            )
+            return plano
+
+        return None
+
+
+    
+    def obter_plano(self, assinatura : Assinatura) -> Plano:
+
+        # Primeiro, buscar o id_plano no banco (caso não tenha certeza se o objeto plano veio completo)
+        resultado = self.executar_select(
+            """
+            SELECT id_plano FROM ASSINATURAS
+            WHERE data_assinatura = ? AND ativa = ?
+            """,
+            (
+                assinatura.data_assinatura.isoformat(),
+                str(assinatura.ativa)
+            )
+        )
+
+        if resultado:
+            id_plano = resultado[0][0]
+            return self.obter_plano_via_id(id_plano)
+
+        return None

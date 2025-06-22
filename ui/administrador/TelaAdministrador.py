@@ -5,12 +5,13 @@ from ui.administrador.PaginaCadastros import PaginaCadastro
 from ui.administrador.PaginaPlanos import PaginaPlanos
 from ui.administrador.PaginaFaturas import PaginaFaturas
 from ui.administrador.PaginaClientes import PaginaClientes
+from models.administrador import Administrador
 
 
 class TelaAdministrador(TelaUsuario):
 
-    def __init__(self, page : ft.Page, login_callback):
-        super().__init__(page = page, login_callback = login_callback)
+    def __init__(self, page : ft.Page, login_callback, usuario : Administrador):
+        super().__init__(page = page, login_callback = login_callback, usuario= usuario)
 
         self._cadastros = PaginaCadastro(self)
         self._clientes = PaginaClientes(self)

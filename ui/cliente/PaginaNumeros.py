@@ -61,7 +61,7 @@ class PaginaNumeros(SubTela):
     
     def pagina_meus_numeros(self) -> None:
         
-        self.numeros_usuario = [num.numero for num in self.tela.bd.numeros.buscar_por_cpf(self.usuario.cpf)]
+        self.numeros_usuario = [num.numero for num in self.tela.bd.numeros.buscar_por_cpf(self.tela.usuario.cpf)]
         container = self.tela.numeros_expandiveis_ref.current
         coluna = self.tela.numeros_lista_ref.current
 
@@ -90,6 +90,17 @@ class PaginaNumeros(SubTela):
     
     
     def pagina_numero(self, e : ft.ControlEvent = None):
+
+        # Obtém o número e suas informações
+        numero = self.tela.bd.numeros.obter_numero(e.control.data)
+        plano = self.tela.bd.assinaturas.obter_plano(numero.assinatura)
+
+        status = ft.Text()
+        if numero.assinatura.ativa:
+            status.value = 'Status: Ativa'
+        else:
+            status.value = 'Status: Suspenso (inativo)'
+
         
         def card_titulo(texto : str = '', icone : ft.Icon = None) -> ft.Row:
             return ft.Row([ft.Icon(icone, size = 24), ft.Text(texto, size = 18, weight = ft.FontWeight.BOLD)])
@@ -105,12 +116,15 @@ class PaginaNumeros(SubTela):
             return ft.Row([botao], alignment=ft.MainAxisAlignment.END)
 
         cabecalho = ft.Container(content=ft.Row([
-            ft.Column([ ft.Text(self.tela.formatarNumero(e.control.data), size=22, weight=ft.FontWeight.BOLD),
-                        ft.Row([ft.Text("Nome do plano", size=16), self.tela.criar_botao("Ver detalhes", cor=False, funcao=self.detalhes_plano)], spacing = 10),
-                        ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),ft.Text("Ativo desde: XX/XX/2025")], spacing = 5),
-                        ft.Row([ft.Icon(ft.Icons.DONE), ft.Text("Status: Ativa")], spacing = 5),
-                        ft.Row([ft.Icon(ft.Icons.ATTACH_MONEY),ft.Text("Próxima fatura: R$ 45,90 - Vence: XX/XX/2025")], spacing = 5),
-                        ],spacing = 10, expand = True, alignment=ft.alignment.top_left),
+            ft.Column([
+                ft.Text(self.tela.formatarNumero(numero.numero), size=22, weight=ft.FontWeight.BOLD),
+                ft.Row([ ft.Row(spacing=5, controls=[ft.Text("Plano: ", weight=ft.FontWeight.BOLD, size=16), ft.Text(plano.nome, size=16)]),
+                        self.tela.criar_botao("Ver detalhes", cor=False, funcao=self.detalhes_plano)], spacing = 10),
+                ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),
+                        ft.Text(f"Ativo desde: {numero.assinatura.data_assinatura.strftime('%d/%m/%Y')}")], spacing = 5),
+                ft.Row([ft.Icon(ft.Icons.DONE), status], spacing = 5),
+                ft.Row([ft.Icon(ft.Icons.ATTACH_MONEY),ft.Text("Próxima fatura: R$ 45,90 - Vence: XX/XX/2025")], spacing = 5),
+                ],spacing = 10, expand = True, alignment=ft.alignment.top_left),
             ft.Container(expand=False, alignment=ft.alignment.top_right , content=
                          ft.Column([
                             botao_lateral(self.tela.criar_botao("Cancelar número", ft.Icons.CANCEL_OUTLINED, funcao=self.cancelar_numero)),

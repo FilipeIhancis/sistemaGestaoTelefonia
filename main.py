@@ -76,4 +76,5 @@ def testar_db():
 
 if __name__ == "__main__":
 
-    testar_db()
+    padrao()
+    #testar_db()

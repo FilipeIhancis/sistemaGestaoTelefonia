@@ -184,3 +184,22 @@ class BancoUsuario(BancoDeDados[Usuario]):
             clientes.append(cliente)
 
         return clientes
+    
+
+    def adicionar_cliente(self, usuario : Usuario) -> bool:
+
+        if self.cpf_existe(usuario.cpf):
+            return False  # Já existe um usuário com esse CPF
+
+        try:
+            self.executar(
+                """
+                INSERT INTO USUARIO (nome, cpf, email, senha, tipo)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (usuario.nome, usuario.cpf, usuario.email, usuario.senha, 'CLIENTE')
+            )
+            return True
+        except Exception as e:
+            print(f"Erro ao adicionar cliente: {e}")
+            return False

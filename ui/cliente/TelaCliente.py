@@ -5,6 +5,7 @@ from ui.cliente.PaginaNumeros import PaginaNumeros
 from ui.cliente.PaginaAdicionarNumero import PaginaAdicionarNumero
 from models.cliente import Cliente
 
+
 class TelaCliente(TelaUsuario):
 
     def __init__(self, page : ft.Page, login_callback, usuario : Cliente):

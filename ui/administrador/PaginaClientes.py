@@ -1,13 +1,7 @@
 import flet as ft
 from ui.base.SubTela import SubTela
+from models.cliente import Cliente
 
-clientes_fake = [
-    {"email": "filipe@gmail.com", "numeros": ["9999999999", "8888888888", "7777777777", "6666666666", "5555555555"]},
-    {"email": "gaskdjasd@gmail.com", "numeros": ["9999999999", "8888888888", "7777777777", "6666666666"]},
-    {"email": "akkaka@gmail.com", "numeros": ["9999999999", "8888888888", "7777777777", "6666666666"]},
-    {"email": "matheus@gmail.com", "numeros": ["9999999999", "8888888888", "7777777777", "6666666666"]},
-    {"email": "gabriel@gmail.com", "numeros": ["9999999999", "8888888888"]},
-]
 
 class PaginaClientes(SubTela):
 
@@ -15,13 +9,13 @@ class PaginaClientes(SubTela):
         super().__init__(tela=tela_admin)
         
 
-    def criar_cartao_cliente(self, cliente):
+    def criar_cartao_cliente(self, cliente : Cliente) -> ft.Container:
         return ft.Container(
             bgcolor = self.tela.cor_cartao_3, alignment= ft.alignment.top_left, border_radius = 5, padding = 10, border=ft.border.all(1), width=280,
             content=ft.Column([
                 # Topo com ícone e email
                 ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
-                    ft.Row([ft.Icon(ft.Icons.PERSON, size=30), ft.Text(cliente["email"], weight=ft.FontWeight.BOLD)]),
+                    ft.Row([ft.Icon(ft.Icons.PERSON, size=30), ft.Text(cliente.email, weight=ft.FontWeight.BOLD)]),
                     ft.IconButton(icon=ft.Icons.SETTINGS, on_click=self.editar_dados_cliente)
                 ]),
                 ft.Divider(),
@@ -31,9 +25,10 @@ class PaginaClientes(SubTela):
                         ft.Text("Números", weight=ft.FontWeight.BOLD),
                             *[
                                 ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN, controls=[
-                                        ft.Text(numero, expand=True),
-                                        self.tela.criar_botao('Editar', cor=False, funcao=self.pagina_edicao_numero)])
-                                for numero in cliente["numeros"]
+                                        ft.Text(self.tela.formatarNumero(numero.numero), expand=True),
+                                        self.tela.criar_botao('Editar', cor=False, funcao=self.pagina_edicao_numero)
+                                ])
+                                for numero in cliente.numeros
                             ]
                     ])
                 ),
@@ -41,11 +36,15 @@ class PaginaClientes(SubTela):
                     content= ft.Row([self.tela.criar_botao('Ver faturas', funcao=self.tela.faturas.ver_faturas_cliente),
                                     self.tela.criar_botao('Adicionar número', funcao=self.tela.cadastros.cadastrar_numero)],
                                     spacing = 10, alignment=ft.alignment.center)
-                )], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                )],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
         )
     
 
     def pagina_clientes(self) -> None:
+
+        # Obtém lista de objetos do tipo Cliente
+        clientes = self.tela.bd.usuarios.obter_clientes()
 
         cabecalho = ft.Container(content=ft.Column([
             ft.Row(  [ ft.Row([ft.Icon(ft.Icons.PHONE),ft.Text("Clientes cadastrados", size = 22, weight = ft.FontWeight.BOLD)]),
@@ -53,15 +52,18 @@ class PaginaClientes(SubTela):
         ]))
 
         self.tela.atualizar_pagina(
-            ft.Column( controls = [ cabecalho, ft.Divider(thickness=2),
-                ft.Row( wrap=True, spacing=20, run_spacing=20, expand = True, scroll = ft.ScrollMode.AUTO,
-                        controls=[self.criar_cartao_cliente(c) for c in clientes_fake])
-                ], scroll = ft.ScrollMode.AUTO
-            )
+            ft.Column( scroll = ft.ScrollMode.AUTO, controls = 
+                [cabecalho,
+                ft.Divider(thickness=2),
+                ft.Row( 
+                    wrap=True, spacing=20, run_spacing=20, expand = True, scroll = ft.ScrollMode.AUTO,
+                    controls=[ self.criar_cartao_cliente(c) for c in clientes]
+                )
+                ])
         )
 
 
-    def pagina_edicao_numero(self, e) -> None:
+    def pagina_edicao_numero(self, e : ft.ControlEvent, cliente : Cliente) -> None:
         
         cliente = "Joao da Silva".upper()
         cpf_cliente = "XXX.XXX.XXX-XX"

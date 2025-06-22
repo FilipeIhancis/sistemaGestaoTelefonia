@@ -105,3 +105,4 @@ class BancoPlano(BancoDeDados[Usuario]):
             return linhas[0][0]             # Retorna o id (primeira coluna da primeira linha)
         else:
             return None                     # Caso o plano não exista no banco
+        
