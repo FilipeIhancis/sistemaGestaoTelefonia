@@ -2,6 +2,7 @@ import flet as ft
 from ui.base.SubTela import SubTela
 from models.usuario import Usuario
 from datetime import datetime
+from models.plano import Plano
 
 class PaginaCadastro(SubTela):
 
@@ -78,7 +79,7 @@ class PaginaCadastro(SubTela):
         self.tela.atualizar_pagina(ft.Column(controls=[cabecalho, ft.Divider(thickness=2), campo], scroll=ft.ScrollMode.AUTO))
 
 
-    def cadastrar_plano(self, e) -> None:
+    def cadastrar_plano(self, e : ft.ControlEvent) -> None:
 
         cabecalho = ft.Row([ft.Icon(ft.Icons.LIST_ALT), ft.Text("Novo Plano", size = 22, weight=ft.FontWeight.BOLD)], spacing=10)
 
@@ -87,27 +88,82 @@ class PaginaCadastro(SubTela):
                 [ft.Text(value=texto, weight=ft.FontWeight.BOLD), textField],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
             )
-
+        
+        # Entradas do administrador:
         nome = self.tela.textField(tamanho=100)
         max_lig = self.tela.textField(tamanho=100, inteiro=True)
         max_msg = self.tela.textField(tamanho=100, inteiro=True)
         dados_internet = self.tela.textField(tamanho=100, inteiro=True)
+        minutos_max = self.tela.textField(tamanho = 100, inteiro=True)
         valor_mensal = self.tela.textField(tamanho=100, flutuante=True)
-        valor_recarga = self.tela.textField(tamanho=100, flutuante=True)
         valor_pacote_msg = self.tela.textField(tamanho=100, flutuante=True)
         valor_pacote_lig = self.tela.textField(tamanho=100, flutuante=True)
+
+        botao_criar_plano = self.tela.criar_botao('Criar Plano')
+        botao_criar_plano.disabled = True
+
         dados_internet.suffix_text = 'MB'
-        valor_mensal.prefix_text = 'R$'
-        valor_recarga.prefix_text = 'R$'
-        valor_pacote_lig.prefix_text = 'R$'
-        valor_pacote_msg.prefix_text = 'R$'
-        
+        valor_mensal.prefix_text = 'R$ '
+        valor_pacote_lig.prefix_text = 'R$ '
+        valor_pacote_msg.prefix_text = 'R$ '
+
+        def adicionar(e : ft.ControlEvent = None) -> None:
+            
+            try:
+                plano = Plano(nome.value, int(dados_internet.value), float(valor_mensal.value), int(max_msg.value),
+                          int(max_lig.value), int(minutos_max.value), float(valor_pacote_msg.value), float(valor_pacote_lig.value))
+            except ValueError:
+                self.tela.page.open(ft.AlertDialog(
+                    title = ft.Text("Erro nos valores", weight=ft.FontWeight.BOLD),
+                    content= ft.Text("Preencha os campos corretamente.")
+                ))
+            if self.tela.bd.planos.plano_existe(nome.value):
+                self.tela.page.open(ft.AlertDialog(
+                    title = ft.Row([ft.Icon(ft.Icons.ERROR_OUTLINE, color=ft.Colors.RED), ft.Text(f"ERRO", weight=ft.FontWeight.BOLD)], spacing=5),
+                    content=ft.Text(f"O plano '{nome.value}' já existe no sistema."),
+                    bgcolor=self.tela.cor_dialogo
+                ))
+                self.tela.page.update()
+            else:
+                self.tela.bd.planos.adicionar_plano(plano)
+                self.tela.page.open(ft.AlertDialog(
+                    bgcolor=self.tela.cor_dialogo,
+                    title=ft.Text('Plano adicionado', weight=ft.FontWeight.BOLD), 
+                    content=ft.Text(f"O plano '{nome.value}' foi adicionado ao sistema com sucesso. Acesse a aba 'Planos' para visualizar.")
+                ))
+                self.tela.page.update()
+
+        def validar(e : ft.ControlEvent = None) -> None:
+            botao_criar_plano.disabled = not (nome.value and max_lig.value and max_msg.value and dados_internet.value and minutos_max.value
+                                              and valor_mensal.value and valor_pacote_msg.value and valor_pacote_lig.value)
+            self.tela.page.update()
+
+        campos = [nome, max_lig, max_msg, dados_internet, minutos_max, dados_internet, minutos_max, valor_mensal, valor_pacote_lig, valor_pacote_msg]
+        for campo in campos:
+            val_original = campo.on_change
+            def combinado(e, original = val_original):
+                if original:
+                    original(e)
+                validar(e)
+            campo.on_change = combinado
+
+        botao_criar_plano.on_click = adicionar
+        minutos_max.on_change = validar
+        nome.on_change = validar
+        max_lig.on_change = validar
+        max_msg.on_change = validar
+        dados_internet.on_change = validar
+        valor_mensal.on_change = validar
+        valor_pacote_lig.on_change = validar
+        valor_pacote_msg.on_change = validar
+
         dados = ft.Container(padding=15, width=350, expand=True, border=ft.border.all(1), border_radius=8, content= ft.Column([
-            ft.Row([ ft.Icon(ft.Icons.INFO), ft.Text('Dados',size=18, weight=ft.FontWeight.BOLD) ], spacing=10),
+            ft.Row([ft.Icon(ft.Icons.INFO), ft.Text('Dados',size=18, weight=ft.FontWeight.BOLD) ], spacing=10),
             ft.Divider(thickness=1),
             criar_linha('Nome', nome),
             criar_linha('Dados de Internet (MB)', dados_internet),
             criar_linha('Máximo de ligações', max_lig),
+            criar_linha('Minutos máx. em ligação', minutos_max),
             criar_linha('Máximo de mensagens', max_msg)
             ])
         )
@@ -115,18 +171,13 @@ class PaginaCadastro(SubTela):
             ft.Row([ ft.Icon(ft.Icons.ATTACH_MONEY), ft.Text('Valores',size=18, weight=ft.FontWeight.BOLD) ], spacing=10),
             ft.Divider(thickness=1),
             criar_linha('Valor mensal', valor_mensal),
-            criar_linha('Valor de recarga', valor_recarga),
             criar_linha('Valor pacote de mensagens', valor_pacote_msg),
             criar_linha('Valor pacote de ligações', valor_pacote_lig)
         ]))
 
-        botoes = ft.Row(spacing = 5, controls=[
-            self.tela.criar_botao('Criar', funcao=None), self.tela.criar_botao('Cancelar')
-        ])
-
         self.tela.atualizar_pagina(
             ft.Column(scroll=ft.ScrollMode.AUTO, controls=[
-            cabecalho, ft.Divider(thickness=2), ft.Row([dados, valores]), botoes
+            cabecalho, ft.Divider(thickness=2), ft.Row([dados, valores]), botao_criar_plano
             ])
         )
 

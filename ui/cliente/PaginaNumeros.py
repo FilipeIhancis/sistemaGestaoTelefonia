@@ -7,7 +7,7 @@ from models.plano import Plano
 class PaginaNumeros(SubTela):
 
     def __init__(self, tela_admin):
-        super().__init__(tela=tela_admin)
+        super().__init__(tela = tela_admin)
 
 
     def criar_dialogo(self, titulo: str, descricao: str, campos: list, acao_confirmar, altura: int = 200) -> None:
@@ -35,8 +35,6 @@ class PaginaNumeros(SubTela):
                     verificar_campos(e)  # Faz a validação dos campos preenchidos
 
                 campo.on_change = combinado
-
-
 
         # Define o que o botão "Solicitar" vai fazer
         solicitar.on_click = acao_confirmar

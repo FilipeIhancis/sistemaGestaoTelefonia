@@ -11,24 +11,21 @@ class PaginaPlanos(SubTela):
         self.cadastros = PaginaCadastro(tela_admin = tela_admin)
 
 
-    def pagina_planos(self) -> None:
+    def pagina_planos(self, e : ft.ControlEvent = None) -> None:
 
         # Obtém todos os planos do banco de dados:
         planos = self.tela.bd.planos.obter_planos()
 
         cabecalho = ft.Container(content=ft.Row([
             ft.Column([ft.Text("Planos", weight=ft.FontWeight.BOLD, size = 22)], alignment=ft.alignment.top_left),
-            ft.Column([self.tela.criar_botao("Adicionar plano", icone=ft.Icons.ADD, funcao = self.cadastros.cadastrar_plano)], alignment=ft.alignment.top_right)
+            ft.Column([self.tela.criar_botao("Adicionar plano", icone=ft.Icons.ADD, funcao = self.cadastros.cadastrar_plano, cor=False)], alignment=ft.alignment.top_right)
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN))
         
-        def excluir(e):
-            pass    
-        
         cartoes_planos = ft.Column(expand = True, controls=[
-            ft.Row(wrap=True, spacing=15, run_spacing=10, controls = [ self.criar_cartao_plano(plano,excluir) for plano in planos])
-            ]
+            ft.Row(wrap=True, spacing=15, run_spacing=10, controls = [
+                self.criar_cartao_plano(plano, lambda e, p = plano: self.excluir_plano(plano = p)) for plano in planos
+            ])]
         )
-
         self.tela.atualizar_pagina( ft.Column( controls=[cabecalho, ft.Divider(thickness=2), cartoes_planos], scroll=ft.ScrollMode.AUTO) )
 
 
@@ -183,3 +180,21 @@ class PaginaPlanos(SubTela):
             expand=True, scroll=ft.ScrollMode.AUTO
             )
         )
+
+
+    def excluir_plano(self, e : ft.ControlEvent = None, plano : Plano = None):
+
+        if( self.tela.bd.planos.excluir_plano(plano.nome) ):
+            self.tela.page.open(ft.AlertDialog(
+                title=ft.Text("Plano excluído"),
+                content=ft.Text("O plano '' foi excluído com sucesso. Nenhuma assinatura ativa contendo esse plano foi encontrada."),
+                bgcolor=self.tela.cor_dialogo,
+                on_dismiss = self.pagina_planos
+            )) 
+        else:
+            self.tela.page.open(ft.AlertDialog(
+                title=ft.Row([ft.Icon(ft.Icons.ERROR_OUTLINE, color=ft.Colors.RED), ft.Text("Erro")], spacing=5),
+                content=ft.Text("Verifique se o algum cliente contém assinatura ativa nesse plano."),
+                bgcolor=self.tela.cor_dialogo,
+                on_dismiss=self.pagina_planos
+            ))

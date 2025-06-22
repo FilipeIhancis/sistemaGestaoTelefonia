@@ -82,6 +82,6 @@ def adicionar_coluna():
 
 if __name__ == "__main__":
 
-    #padrao()
+    padrao()
     #testar_db()
-    adicionar_coluna()
+    #adicionar_coluna()

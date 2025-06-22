@@ -2,12 +2,11 @@
 
 import sqlite3
 from datetime import datetime
-
 from models import *
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
-
 T = TypeVar('T')
+
 
 class BancoDeDados(ABC, Generic[T]):
 

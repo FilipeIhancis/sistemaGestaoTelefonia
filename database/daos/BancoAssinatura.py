@@ -2,8 +2,6 @@ from database.BancoDeDados import BancoDeDados, T
 from models import *
 from datetime import datetime
 
-from database.daos.BancoPlano import BancoPlano
-
 class BancoAssinatura(BancoDeDados[Usuario]):
 
     def __init__(self, diretorio : str = ''):
@@ -11,7 +9,8 @@ class BancoAssinatura(BancoDeDados[Usuario]):
 
 
     def salvar(self, assinatura : Assinatura) -> int | None:
-
+        
+        from database.daos.BancoPlano import BancoPlano
         id_plano = BancoPlano(self.diretorio).obter_id_plano(assinatura.plano)
 
         return self.executar(
@@ -63,6 +62,25 @@ class BancoAssinatura(BancoDeDados[Usuario]):
             """,
             (id_assinatura, numero)
         )
+
+    
+    def obter_assinaturas(self) -> list[Assinatura]:
+
+        assinaturas: list[Assinatura] = []
+        resultado = self.executar_select("""
+            SELECT id_plano, data_assinatura, ativa FROM ASSINATURAS
+        """)
+
+        if resultado:
+            for linha in resultado:
+                id_plano, data_assinatura_str, ativa_str = linha
+                plano = self.obter_plano_via_id(id_plano)
+                data_assinatura = datetime.fromisoformat(data_assinatura_str)
+                ativa = True if ativa_str == 'True' else False
+                assinatura = Assinatura(plano, data_assinatura, ativa)
+                assinaturas.append(assinatura)
+
+        return assinaturas
 
 
     def obter_assinatura(self, numero: Numero) -> Assinatura:
@@ -129,7 +147,6 @@ class BancoAssinatura(BancoDeDados[Usuario]):
         return None
 
 
-    
     def obter_plano(self, assinatura : Assinatura) -> Plano:
 
         # Primeiro, buscar o id_plano no banco (caso não tenha certeza se o objeto plano veio completo)
