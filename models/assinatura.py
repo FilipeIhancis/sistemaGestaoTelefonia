@@ -37,7 +37,6 @@ class Assinatura:
         if not isinstance(status, bool):
             raise ValueError("ativa precisa ser um valor booleano.")
         self.__ativa = status
-
     
     def desativar(self, banco) -> None:
         self.ativa = False
