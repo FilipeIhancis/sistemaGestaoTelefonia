@@ -48,13 +48,13 @@ class Numero:
 
     @property
     def assinatura(self) -> Assinatura:
-        return self.__assinatura
+        return self._assinatura
 
     @assinatura.setter
     def assinatura(self, ass: Assinatura):
         if ass is not None and not isinstance(ass, Assinatura):
             raise ValueError("Assinatura inválida.")
-        self.__assinatura = ass
+        self._assinatura = ass
 
     @property
     def mensagens(self) -> list[Mensagem]:

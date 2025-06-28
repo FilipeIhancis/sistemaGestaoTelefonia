@@ -17,8 +17,7 @@ class PaginaAdicionarNumero(SubTela):
         planos_container = []
         botao_solicitar = self.tela.criar_botao('Solicitar Número')
 
-        cabecalho = ft.Text("Adicionar novo número", size=22, weight=ft.FontWeight.BOLD)
-
+        cabecalho = ft.Row([ft.Icon(ft.Icons.ADD_CIRCLE), ft.Text("Adicionar novo número", size=22, weight=ft.FontWeight.BOLD)], spacing=5)
 
         # Radio group de recarga
         recarga_group = ft.RadioGroup(

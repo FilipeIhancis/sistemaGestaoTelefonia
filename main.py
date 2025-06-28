@@ -1,7 +1,5 @@
 # MAIN
 
-
-
 from ui.Tela import Tela
 from database.GerenciadorBanco import GerenciadorBanco
 from datetime import datetime

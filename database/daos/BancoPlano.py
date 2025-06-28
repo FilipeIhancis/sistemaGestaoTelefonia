@@ -2,7 +2,7 @@ from database.BancoDeDados import BancoDeDados, T
 from models import *
 import sqlite3
 
-class BancoPlano(BancoDeDados[Usuario]):
+class BancoPlano(BancoDeDados[Plano]):
 
     def __init__(self, diretorio : str = ''):
         super().__init__(diretorio)

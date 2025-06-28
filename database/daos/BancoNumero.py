@@ -2,6 +2,7 @@ from database.BancoDeDados import BancoDeDados, T
 from typing import List, Optional
 from database.daos.BancoAssinatura import BancoAssinatura
 from models import *
+import random
 
 class BancoNumero(BancoDeDados[Numero]):
 
@@ -67,8 +68,6 @@ class BancoNumero(BancoDeDados[Numero]):
 
     def obter_numero(self, num : str) -> Numero:
 
-        # IMPLEMENTAR MENSAGENS E LIGAÇÕES AQUI 
-
         resultado = self.executar_select(
             """
             SELECT numero, saldo, cpf_cliente, id_assinatura
@@ -88,7 +87,7 @@ class BancoNumero(BancoDeDados[Numero]):
             assinatura = None
             if id_assinatura is not None:
                 # Busca a assinatura
-                assinatura = BancoAssinatura(self.diretorio).obter_assinatura(Numero(numero=numero_str))
+                assinatura = BancoAssinatura(self.diretorio).obter_assinatura(num)
 
             numero_obj = Numero(
                 numero=numero_str,
@@ -102,3 +101,22 @@ class BancoNumero(BancoDeDados[Numero]):
             return numero_obj
 
         return None
+    
+
+    def modificar_proprieatario(self, numero : Numero, cpf_novo_proprieatario : str) -> None:
+        self.executar(
+            """
+            UPDATE NUMEROS_TELEFONE
+            SET cpf_cliente = ?
+            WHERE numero = ?
+            """,
+            (cpf_novo_proprieatario, numero.numero)
+        )
+
+    def gerar_numero_telefone(self) -> str:
+        num = ''
+        while True:
+            num = '319' + ''.join(str(random.randint(0,9)) for i in range(8))
+            if not self.numero_existe(num):
+                break
+        return num

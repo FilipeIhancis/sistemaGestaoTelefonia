@@ -19,7 +19,8 @@ class PaginaCadastro(SubTela):
         cpf = self.tela.textField(tamanho=200, inteiro=True)
         nome = self.tela.textField(tamanho=200, texto=True)
         email = self.tela.textField(tamanho=200, texto=True)
-        senha = ft.Text("senhaRandom")
+        senha = ft.Text( self.tela.adm.gerar_senha_aleatoria() )
+
         mensagem_erro = ft.Text("Dados inválidos. Verifique se o CPF já possui cadastro no sistema.", color=ft.Colors.RED, visible=False)
 
         cadastrar = self.tela.criar_botao('Cadastrar')
@@ -31,13 +32,7 @@ class PaginaCadastro(SubTela):
                 if (self.tela.bd.usuarios.adicionar_cliente(usuario = cliente)):
                     mensagem_erro.visible = False
                     self.tela.page.update()
-                    self.tela.page.open(
-                        ft.AlertDialog(
-                            title = ft.Text("Cliente adicionado com sucesso"),
-                            alignment=ft.alignment.center,
-                            bgcolor = self.tela.cor_dialogo
-                        )
-                    )
+                    self.tela.page.open(self.tela.dialogo( title = ft.Text("Cliente adicionado com sucesso")))
                 else:
                     mensagem_erro.visible = True
                     self.tela.page.update()
@@ -57,7 +52,7 @@ class PaginaCadastro(SubTela):
 
         cabecalho = ft.Text("Cadastro de novo cliente", size=22, weight=ft.FontWeight.BOLD)
 
-        campo = ft.Container( border=ft.border.all(1), border_radius=6, padding=ft.padding.all(25), expand=True, 
+        campo = ft.Container( border=ft.border.all(1), border_radius=6, padding=ft.padding.all(25), expand=True, bgcolor=self.tela.cor_cartao_3,
             content=ft.Column([
                     ft.Row(
                         [ft.Text('CPF CLIENTE', weight=ft.FontWeight.BOLD), cpf,],
@@ -112,26 +107,23 @@ class PaginaCadastro(SubTela):
         valor_pacote_msg.prefix_text = 'R$ '
 
         def adicionar(e : ft.ControlEvent = None) -> None:
-            
             try:
                 plano = Plano(nome.value, int(dados_internet.value), float(valor_mensal.value), int(max_msg.value),
-                          int(max_lig.value), int(minutos_max.value), float(valor_pacote_msg.value), float(valor_pacote_lig.value))
+                            int(max_lig.value), int(minutos_max.value), float(valor_pacote_msg.value), float(valor_pacote_lig.value))
             except ValueError:
-                self.tela.page.open(ft.AlertDialog(
+                self.tela.page.open(self.tela.dialogo(
                     title = ft.Text("Erro nos valores", weight=ft.FontWeight.BOLD),
-                    content= ft.Text("Preencha os campos corretamente.")
-                ))
+                    content= ft.Text("Preencha os campos corretamente."))
+                )
             if self.tela.bd.planos.plano_existe(nome.value):
-                self.tela.page.open(ft.AlertDialog(
+                self.tela.page.open(self.tela.dialogo(
                     title = ft.Row([ft.Icon(ft.Icons.ERROR_OUTLINE, color=ft.Colors.RED), ft.Text(f"ERRO", weight=ft.FontWeight.BOLD)], spacing=5),
-                    content=ft.Text(f"O plano '{nome.value}' já existe no sistema."),
-                    bgcolor=self.tela.cor_dialogo
-                ))
+                    content=ft.Text(f"O plano '{nome.value}' já existe no sistema."))
+                )
                 self.tela.page.update()
             else:
                 self.tela.bd.planos.adicionar_plano(plano)
-                self.tela.page.open(ft.AlertDialog(
-                    bgcolor=self.tela.cor_dialogo,
+                self.tela.page.open(self.tela.dialogo(
                     title=ft.Text('Plano adicionado', weight=ft.FontWeight.BOLD), 
                     content=ft.Text(f"O plano '{nome.value}' foi adicionado ao sistema com sucesso. Acesse a aba 'Planos' para visualizar.")
                 ))
@@ -186,11 +178,11 @@ class PaginaCadastro(SubTela):
         )
 
 
-    def cadastrar_numero(self, e = None) -> None:
+    def cadastrar_numero(self, e : ft.ControlEvent = None) -> None:
 
         cliente_escolhido = None
         plano_escolhido = None
-        numero_aleatorio = self.tela.gerar_numero_telefone()
+        numero_aleatorio = self.tela.bd.numeros.gerar_numero_telefone()
         texto_numero = ft.Text(self.tela.formatarNumero(numero_aleatorio))
 
         cpfs = [cliente.cpf for cliente in self.tela.bd.usuarios.obter_clientes()]
@@ -199,7 +191,7 @@ class PaginaCadastro(SubTela):
         proprietario = self.tela.dropdown('Escolha um cliente', cpfs)
         plano = self.tela.dropdown('Escolha um plano', planos)
         saldo_inicial = self.tela.textField(prefixo='R$ ', tamanho=150, flutuante=True)
-        info = ft.Container(padding=20, border_radius=8, border=ft.border.all(1), expand=True)
+        info = ft.Container(padding=20, border_radius=8, border=ft.border.all(1), expand=True, bgcolor=self.tela.cor_cartao_3)
 
         # Função auxiliar para criar linhas de info
         def criar_linha(texto1: str, texto2: str) -> ft.Row:
@@ -214,7 +206,7 @@ class PaginaCadastro(SubTela):
             linhas = [
                 criar_linha('Número', self.tela.formatarNumero(numero_aleatorio)),
                 ft.Divider(thickness=1),
-                criar_linha('Proprietário', cliente_escolhido.cpf if cliente_escolhido else '----'),
+                criar_linha('Proprietário', (f'{cliente_escolhido.nome} ({cliente_escolhido.cpf})') if cliente_escolhido else '----'),
                 ft.Divider(thickness=1),
                 criar_linha('Plano', plano_escolhido.nome if plano_escolhido else '----'),
                 ft.Divider(thickness=1),
@@ -224,9 +216,8 @@ class PaginaCadastro(SubTela):
                 ft.Divider(thickness=1),
                 criar_linha('Máximo de mensagens', str(plano_escolhido.maximo_mensagens) if plano_escolhido else '----')
             ]
-
             info.content = ft.Column(
-                [ft.Container(padding=ft.padding.only(bottom=18),
+                [ft.Container(padding=ft.padding.only(bottom=18), bgcolor=self.tela.cor_cartao_3,
                             content=ft.Row(spacing=5, controls=[
                                 ft.Icon(ft.Icons.INFO),
                                 ft.Text("Informações do número", size=18, weight=ft.FontWeight.BOLD)
@@ -246,7 +237,7 @@ class PaginaCadastro(SubTela):
         # Botão de regenerar número
         def alterar_num(e: ft.ControlEvent = None) -> None:
             nonlocal numero_aleatorio
-            numero_aleatorio = self.tela.gerar_numero_telefone()
+            numero_aleatorio = self.tela.bd.numeros.gerar_numero_telefone()
             texto_numero.value = self.tela.formatarNumero(numero_aleatorio)
             atualizar_info()
             self.tela.page.update()
@@ -266,7 +257,7 @@ class PaginaCadastro(SubTela):
 
         # Card de configuração de dados
         configDados = ft.Container(
-            padding=20, border_radius=8, border=ft.border.all(1), expand=True,
+            padding=20, border_radius=8, border=ft.border.all(1), expand=True, bgcolor=self.tela.cor_cartao_3,
             content=ft.Column([
                 ft.Container(
                     padding=ft.padding.only(bottom=8),
@@ -301,17 +292,15 @@ class PaginaCadastro(SubTela):
                 self.tela.bd.assinaturas.salvar(
                     Assinatura(plano_escolhido, datetime.now(), True)
                 )
-                self.tela.page.open(ft.AlertDialog(
+                self.tela.page.open(self.tela.dialogo(
                     title=ft.Text("Número adicionado"),
                     content=ft.Text("Acesse a seção 'Clientes' para visualizar o número do cliente."),
-                    on_dismiss=self.cadastrar_numero,
-                    bgcolor=self.tela.cor_dialogo
+                    on_dismiss=self.cadastrar_numero
                 ))
             else:
-                self.tela.page.open(ft.AlertDialog(
+                self.tela.page.open(self.tela.dialogo(
                     title=ft.Text("Erro"),
-                    content=ft.Text("Defina os dados do número antes de criar."),
-                    bgcolor=self.tela.cor_dialogo
+                    content=ft.Text("Defina os dados do número antes de criar.")
                 ))
             self.tela.page.update()
 
@@ -327,5 +316,4 @@ class PaginaCadastro(SubTela):
                 self.tela.criar_botao('Criar número', funcao=criar)
             ])
         )
-
         atualizar_info()  # Primeira atualização do card

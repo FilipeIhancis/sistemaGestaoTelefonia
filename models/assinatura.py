@@ -40,7 +40,6 @@ class Assinatura:
     
     def desativar(self, banco) -> None:
         self.ativa = False
-        #banco.desativar_assinatura(self.id_assinatura)  # [BANCO] Criar método que atualiza o campo 'ativa' da assinatura para 'False'
 
     def esta_ativa(self) -> bool:
         return self.ativa

@@ -10,8 +10,8 @@ class TelaUsuario(TelaBase, ABC):
 
     def __init__(self, page : ft.Page, login_callback, usuario : Usuario, *args, **kwargs):
         super().__init__( page = page , *args, **kwargs )
-        self._login_callback = login_callback
-        self._editar_dados = PaginaEditarDados(self)
+        self.login_callback = login_callback
+        self.editar_dados = PaginaEditarDados(self)
         self.usuario = usuario
 
     @property

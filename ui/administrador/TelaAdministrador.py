@@ -6,19 +6,28 @@ from ui.administrador.PaginaPlanos import PaginaPlanos
 from ui.administrador.PaginaFaturas import PaginaFaturas
 from ui.administrador.PaginaClientes import PaginaClientes
 from models.administrador import Administrador
-import random
-
 
 class TelaAdministrador(TelaUsuario):
 
     def __init__(self, page : ft.Page, login_callback, usuario : Administrador):
         super().__init__(page = page, login_callback = login_callback, usuario= usuario)
+        self.cadastros = PaginaCadastro(self)
+        self.clientes = PaginaClientes(self)
+        self.solicitacoes = PaginaSolicitacoes(self)
+        self.planos = PaginaPlanos(self)
+        self.faturas = PaginaFaturas(self)
+        self.adm = Administrador(usuario.nome, usuario.cpf, usuario.email, usuario.senha)
 
-        self._cadastros = PaginaCadastro(self)
-        self._clientes = PaginaClientes(self)
-        self.__solicitacoes = PaginaSolicitacoes(self)
-        self.__planos = PaginaPlanos(self)
-        self.__faturas = PaginaFaturas(self)
+
+    @property
+    def adm(self):
+        return self._adm
+    
+    @adm.setter
+    def adm(self, novoAdm:Administrador):
+        if not isinstance(novoAdm, Administrador):
+            raise ValueError
+        self._adm = novoAdm
 
     @property
     def solicitacoes(self):
@@ -166,12 +175,3 @@ class TelaAdministrador(TelaUsuario):
             case 'Solicitações':        self.solicitacoes.pagina_solicitacoes()
             case 'Planos':              self.planos.pagina_planos()
             case 'Sair':                self.sair()
-
-
-    def gerar_numero_telefone(self) -> str:
-        num = ''
-        while True:
-            num = '319' + ''.join(str(random.randint(0,9)) for i in range(8))
-            if not self.bd.numeros.numero_existe(num):
-                break
-        return num

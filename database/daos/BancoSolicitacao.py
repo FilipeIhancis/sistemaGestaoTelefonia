@@ -3,7 +3,7 @@ from models import *
 from datetime import datetime
 from database.daos.BancoUsuario import BancoUsuario
 
-class BancoSolicitacao(BancoDeDados[Usuario]):
+class BancoSolicitacao(BancoDeDados[Solicitacao]):
 
     def __init__(self, diretorio : str = ''):
         super().__init__(diretorio)

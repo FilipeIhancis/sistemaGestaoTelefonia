@@ -12,24 +12,22 @@ class TelaCliente(TelaUsuario):
     def __init__(self, page : ft.Page, login_callback, usuario : Cliente):
 
         super().__init__(page = page, login_callback = login_callback, usuario=usuario)
-        self.__menu_lateral = ft.Column(spacing = 5, expand = False)
-        self.numeros_fake = ['(31) 91234-5678', '(31) 99876-5432', '(31) 93456-7890']
-        self.planos_fake = []
+
+        self.menu_lateral = ft.Column(spacing = 5, expand = False)
 
         # Usando Ref para acessar o container (possibilita animações)
         self.numeros_expandiveis_ref = ft.Ref[ft.Container]()
         self.numeros_lista_ref = ft.Ref[ft.Column]()
         self.numeros_expandiveis = ft.Container(
             content=ft.Column(ref=self.numeros_lista_ref, spacing=5), height=0, animate=ft.Animation(duration=300, 
-            curve=ft.AnimationCurve.EASE_IN_OUT), clip_behavior=ft.ClipBehavior.HARD_EDGE,
-            ref = self.numeros_expandiveis_ref, )
+            curve=ft.AnimationCurve.EASE_IN_OUT), clip_behavior=ft.ClipBehavior.HARD_EDGE, ref = self.numeros_expandiveis_ref)
         
         self.faturas = PaginaFaturas(self)
         self.numeros = PaginaNumeros(self)
         self.adicionar_numero = PaginaAdicionarNumero(self)
-
         self.numeros_usuario = [num.numero for num in self.bd.numeros.buscar_por_cpf(self.usuario.cpf)]
     
+
     @property
     def numeros_usuario(self) -> list[str]:
         return self._numeros_usuario
@@ -115,6 +113,7 @@ class TelaCliente(TelaUsuario):
         
         # Cria a página:
         self.page.add(layout)
+        self.editar_dados.pagina_editar_dados()
     
 
     def criar_menu_lateral(self) -> None:
@@ -207,7 +206,7 @@ class TelaCliente(TelaUsuario):
                     obs,
                     self.criar_botao("Enviar", funcao = solicitar)
                 ]), 
-                padding = 30, border = ft.border.all(1), border_radius=10, expand = True, alignment=ft.alignment.top_left
+                padding = 30, border = ft.border.all(1), border_radius=10, expand = True, alignment=ft.alignment.top_left, bgcolor=self.cor_cartao_3
         )
 
         self.atualizar_pagina(

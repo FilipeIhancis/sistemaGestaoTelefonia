@@ -2,6 +2,7 @@ import flet as ft
 from ui.base.SubTela import SubTela
 import datetime
 from models.plano import Plano
+from models.numero import Numero
 
 
 class PaginaNumeros(SubTela):
@@ -108,13 +109,28 @@ class PaginaNumeros(SubTela):
 
         # Obtém o número e suas informações
         numero = self.tela.bd.numeros.obter_numero(e.control.data)
-        plano = self.tela.bd.assinaturas.obter_plano(numero.assinatura)
+        plano = None
 
         status = ft.Text()
-        if numero.assinatura.ativa:
-            status.value = 'Status: Ativa'
+        nome_plano = ft.Text()
+
+        if numero.assinatura is None:
+            plano = None
+            status.value = "Status: Sem assinatura"
         else:
-            status.value = 'Status: Suspenso (inativo)'
+            plano = self.tela.bd.assinaturas.obter_plano(numero.assinatura)
+            if numero.assinatura.ativa:
+                status.value = 'Status: Ativa'
+            else:
+                status.value = 'Status: Suspenso (inativo)'
+
+        ver_detalhes_plano = self.tela.criar_botao("Ver detalhes", cor=False, funcao= lambda e:self.detalhes_plano(plano=plano))
+        if plano == None:
+            nome_plano.value = "---"
+            ver_detalhes_plano.disabled = True
+        else:
+            nome_plano.value = plano.nome
+            ver_detalhes_plano.disabled = False
 
         
         def card_titulo(texto : str = '', icone : ft.Icon = None) -> ft.Row:
@@ -129,14 +145,19 @@ class PaginaNumeros(SubTela):
         
         def botao_lateral( botao : ft.ElevatedButton = None ) -> ft.Row:
             return ft.Row([botao], alignment=ft.MainAxisAlignment.END)
+        
+        def formatar_data_assinatura(numero : Numero) -> str:
+            if numero.assinatura and numero.assinatura.data_assinatura:
+                return numero.assinatura.data_assinatura.strftime('%d/%m/%Y')
+            return "Sem assinatura"
 
         cabecalho = ft.Container(content=ft.Row([
             ft.Column([
                 ft.Text(self.tela.formatarNumero(numero.numero), size=22, weight=ft.FontWeight.BOLD),
-                ft.Row([ ft.Row(spacing=5, controls=[ft.Text("Plano: ", weight=ft.FontWeight.BOLD, size=16), ft.Text(plano.nome, size=16)]),
-                        self.tela.criar_botao("Ver detalhes", cor=False, funcao= lambda e:self.detalhes_plano(plano=plano))], spacing = 10),
+                ft.Row([ ft.Row(spacing=5, controls=[ft.Text("Plano: ", weight=ft.FontWeight.BOLD, size=16), ft.Text(nome_plano.value, size=16)]),
+                        ver_detalhes_plano], spacing = 10),
                 ft.Row([ft.Icon(ft.Icons.CALENDAR_MONTH),
-                        ft.Text(f"Ativo desde: {numero.assinatura.data_assinatura.strftime('%d/%m/%Y')}")], spacing = 5),
+                        ft.Text(f"Ativo desde: {formatar_data_assinatura(numero)}")], spacing = 5),
                 ft.Row([ft.Icon(ft.Icons.DONE), status], spacing = 5),
                 ft.Row([ft.Icon(ft.Icons.ATTACH_MONEY),ft.Text("Próxima fatura: R$ 45,90 - Vence: XX/XX/2025")], spacing = 5),
                 ],spacing = 10, expand = True, alignment=ft.alignment.top_left),

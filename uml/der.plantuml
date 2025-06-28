@@ -1,0 +1,115 @@
+@startuml diagrama_entidade_relacionamento
+!theme plain
+
+skinparam entity {
+  borderColor black
+  backgroundColor white
+  fontColor black
+}
+
+skinparam arrow {
+  thickness 2
+  color black
+}
+
+skinparam relationshipLabelPadding 5
+
+entity "USUARIO" as Usuario {
+  + cpf: TEXT <<PK>>
+  --
+  nome: TEXT
+  email: TEXT <<UNIQUE>>
+  senha: TEXT
+  tipo: TEXT <<CHECK('CLIENTE','ADMINISTRADOR')>>
+}
+
+entity "PLANOS" as Planos {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  nome: TEXT
+  dados_mb: INTEGER
+  preco: REAL
+  maximo_mensagens: INTEGER
+  maximo_ligacao: INTEGER
+  minutos_max_ligacao: INTEGER
+  pacote_mensagem_unitario: REAL
+  pacote_minutos_unitario: REAL
+}
+
+entity "ASSINATURAS" as Assinaturas {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  id_plano: INTEGER <<FK>>
+  data_assinatura: TEXT
+  ativa: TEXT <<CHECK('True','False')>>
+}
+
+entity "NUMEROS_TELEFONE" as NumerosTelefone {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  numero: TEXT
+  saldo: REAL
+  cpf_cliente: TEXT <<FK>>
+  id_assinatura: INTEGER <<FK>>
+}
+
+entity "FATURAS" as Faturas {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  id_numero: INTEGER <<FK>>
+  valor_pacote_minutos: REAL
+  valor_pacote_mensagem: REAL
+  valor_pacote_dados: REAL
+  valor_total: REAL
+  emissao: TEXT
+  status: TEXT
+  mes_referencia: TEXT
+  data_emissao: TEXT
+  data_vencimento: TEXT
+}
+
+entity "SOLICITACOES" as Solicitacoes {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  cpf_cliente: TEXT <<FK>>
+  assunto: TEXT
+  categoria: TEXT
+  status: TEXT <<CHECK('True','False')>>
+  observacoes: TEXT
+}
+
+entity "MENSAGENS" as Mensagens {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  origem: TEXT <<FK>>
+  destino: TEXT <<FK>>
+  data_envio: TEXT
+  conteudo: TEXT
+}
+
+entity "LIGACOES" as Ligacoes {
+  + id: INTEGER <<PK, AUTOINCREMENT>>
+  --
+  origem: TEXT <<FK>>
+  destino: TEXT <<FK>>
+  data_inicio: TEXT
+  data_fim: TEXT
+  duracao: INTEGER
+}
+
+' Relacionamentos
+Usuario "1" -- " 0..*     " NumerosTelefone : " possui"
+Usuario "1" -- "0..*" Solicitacoes : " envia"
+
+Planos " 1" -- "  0..*" Assinaturas : " referencia"
+Assinaturas " 1" -- "  0..1" NumerosTelefone : " associada a"
+
+NumerosTelefone " 1" -- "    0..*" Faturas : " gera"
+
+NumerosTelefone "   1  " --> "0..*" Mensagens : " origem"
+NumerosTelefone "    1   " <-- "0..*" Mensagens : " destino"
+
+NumerosTelefone " 1" --> "0..*" Ligacoes : " origem"
+NumerosTelefone " 1" <-- "0..*" Ligacoes : " destino"
+
+@enduml

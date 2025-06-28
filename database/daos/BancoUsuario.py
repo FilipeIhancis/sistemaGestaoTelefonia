@@ -233,3 +233,30 @@ class BancoUsuario(BancoDeDados[Usuario]):
         except Exception as e:
             print(f"Erro ao adicionar cliente: {e}")
             return False
+        
+
+    def modificar_senha(self, cpf: str, nova_senha : str) -> None:
+       self.executar(
+            """
+            UPDATE USUARIO
+            SET senha = ?
+            WHERE cpf = ?
+            """,
+            (
+                nova_senha,
+                cpf
+            )
+        )
+
+    def modificar_email(self, cpf : str, novo_email : str) -> None:
+        self.executar(
+            """
+            UPDATE USUARIO
+            SET email = ?
+            WHERE cpf = ?
+            """,
+            (
+                novo_email,
+                cpf
+            )
+        )

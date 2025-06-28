@@ -81,15 +81,29 @@ class BancoAssinatura(BancoDeDados[Usuario]):
                 assinaturas.append(assinatura)
 
         return assinaturas
+    
+    
+    def obter_id_assinatura(self, numero : str) -> int | None:
+
+        resultado = self.executar_select(
+            """
+            SELECT id_assinatura FROM NUMEROS_TELEFONE
+            WHERE numero = ?
+            """,
+            (numero,)
+        )
+        if resultado and resultado[0][0] is not None:
+            return resultado[0][0]
+        return None
 
 
-    def obter_assinatura(self, numero: Numero) -> Assinatura:
+    def obter_assinatura(self, numero : str) -> Assinatura:
 
         resultado = self.executar_select(
             """
             SELECT id_assinatura FROM NUMEROS_TELEFONE WHERE numero = ?
             """,
-            (numero.numero,)
+            (numero,)
         )
 
         if resultado and resultado[0][0] is not None:
@@ -164,5 +178,44 @@ class BancoAssinatura(BancoDeDados[Usuario]):
         if resultado:
             id_plano = resultado[0][0]
             return self.obter_plano_via_id(id_plano)
+
+        return None
+    
+
+    def modificar(self, id_assinatura : int, nova_assinatura : Assinatura) -> None:
+
+        from database.daos.BancoPlano import BancoPlano
+        id_plano = BancoPlano(self.diretorio).obter_id_plano(nova_assinatura.plano)
+
+        self.executar(
+            """
+            UPDATE ASSINATURAS
+            SET id_plano = ?, data_assinatura = ?, ativa = ?
+            WHERE id = ?
+            """,
+            (
+                id_plano,
+                nova_assinatura.data_assinatura.isoformat(),
+                str(nova_assinatura.ativa),
+                id_assinatura
+            )
+        )
+
+
+    def obter_assinatura_id(self, id_assinatura : int) -> Assinatura:
+
+        resultado = self.executar_select(
+            """
+            SELECT id, id_plano, ativa
+            FROM ASSINATURAS
+            WHERE id = ?
+            """,
+            (id_assinatura,)
+        )
+        if resultado:
+            #FAZER AQUI
+            return Assinatura(
+                resultado[0][1]
+            )
 
         return None

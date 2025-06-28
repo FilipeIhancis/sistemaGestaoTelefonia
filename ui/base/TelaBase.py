@@ -5,19 +5,29 @@ import re
 class TelaBase():
 
     def __init__(self, page : ft.Page):
-        
-        self.__app = ft.app
-        self._page = page
-        self.__conteudo_pagina = ft.Container(expand=True, alignment=ft.alignment.center)
-        self.__cor_barra_progresso : str = ''
-        self.__cor_botao : str = ''
-        self.__cor_cartao_1 : str = ''
-        self.__cor_cartao_2 : str = ''
-        self.__cor_cartao_3 : str = ''
-        self.__cor_dialogo : str = ''
+        self.app = ft.app
+        self.page = page
+        self.conteudo_pagina = ft.Container(expand=True, alignment=ft.alignment.center)
+        self.cor_barra_progresso : str = "#FFFFFF"
+        self.cor_botao : str = "#FFFFFF"
+        self.cor_cartao_1 : str = "#FFFFFF"
+        self.cor_cartao_2 : str = "#FFFFFF"
+        self.cor_cartao_3 : str = "#FFFFFF"
+        self.cor_dialogo : str = "#FFFFFF"
         self.definir_cor_azul()
+
         self.bd = GerenciadorBanco('database/exemplo.db')
 
+
+    @property
+    def bd(self):
+        return self.__bd
+    
+    @bd.setter
+    def bd(self, novoGerenciador : GerenciadorBanco) -> None:
+        if not isinstance(novoGerenciador, GerenciadorBanco):
+            raise ValueError
+        self.__bd = novoGerenciador
 
     @property
     def app(self):
@@ -64,7 +74,7 @@ class TelaBase():
     @cor_botao.setter
     def cor_botao(self, cor : str):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_botao = cor
     
     @property
@@ -74,7 +84,7 @@ class TelaBase():
     @cor_cartao_1.setter
     def cor_cartao_1(self, cor : str):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_cartao_1 = cor
     
     @property
@@ -84,7 +94,7 @@ class TelaBase():
     @cor_cartao_2.setter
     def cor_cartao_2(self, cor : str):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_cartao_2 = cor
     
     @property
@@ -94,7 +104,7 @@ class TelaBase():
     @cor_cartao_3.setter
     def cor_cartao_3(self, cor : str):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_cartao_3 = cor
     
     @property
@@ -104,7 +114,7 @@ class TelaBase():
     @cor_barra_progresso.setter
     def cor_barra_progresso(self, cor : str):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_barra_progresso = cor
 
     @property
@@ -114,22 +124,14 @@ class TelaBase():
     @cor_dialogo.setter
     def cor_dialogo(self, cor):
         if not self.validar_cor(cor):
-            raise ValueError
+            raise ValueError('cor inválida')
         self.__cor_dialogo = cor
+
 
     def validar_cor(self, cor : str = '') -> bool :
         if not isinstance(cor, str):
             return False
         return bool(re.match(r'^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', cor))
-
-    def validar_email(self, e = None) -> bool :
-        return True
-    
-    def validar_senha(self, e = None) -> bool:
-        return False
-    
-    def validar_cpf(self, e = None) -> bool:
-        return True
 
     
     def iniciar(self, pagina_inicio : None):
@@ -218,17 +220,26 @@ class TelaBase():
             width=tamanho,
             on_change=funcao
         )
+    
 
+    def dialogo(self, **kwargs):
+        return ft.AlertDialog(
+            bgcolor = self.cor_dialogo,
+            alignment=ft.alignment.center,
+            **kwargs
+        )
 
-    ## IMPLEMENTAR AS CORES DEPOIS !
 
     def definir_cor_vermelho(self) -> None:
         self.cor_botao = "#6D2D2D"
         self.cor_cartao_1 = "#282727"
         self.cor_cartao_2 = "#442222"
 
+
     def definir_cor_azul(self) -> None:
         self.cor_botao = "#372D6D"
         self.cor_cartao_1 = "#1D1420"
         self.cor_cartao_2 = "#272244"
+        self.cor_cartao_3 = "#151320"
+        self.cor_barra_progresso = "#6451CF"
         self.cor_dialogo = "#1A1929"

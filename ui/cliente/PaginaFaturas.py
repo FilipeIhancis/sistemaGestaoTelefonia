@@ -15,6 +15,8 @@ class PaginaFaturas(SubTela):
         mes_selecionado = ft.Ref[ft.Dropdown]()
         container_detalhes = ft.Ref[ft.Container]()
 
+        self.numeros_usuario = [num.numero for num in self.tela.bd.numeros.buscar_por_cpf(self.tela.usuario.cpf)]
+
         def atualizar_fatura(e = None):
             if not numero_selecionado.current.value or not mes_selecionado.current.value:
                 return
@@ -41,7 +43,7 @@ class PaginaFaturas(SubTela):
         meses = ["06/2025", "05/2025", "04/2025", "03/2025"]
 
         numero_dropdown = ft.Dropdown(
-            label="Escolha um número", options=[ft.dropdown.Option(n) for n in self.tela.numeros_fake],
+            label="Escolha um número", options=[ft.dropdown.Option(n) for n in self.numeros_usuario],
             on_change = atualizar_fatura, ref=numero_selecionado, width=300, border_width=1, border_color=ft.Colors.GREY
         )
         mes_dropdown = ft.Dropdown(
