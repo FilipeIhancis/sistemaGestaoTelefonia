@@ -52,7 +52,7 @@ class PaginaClientes(SubTela):
         )
     
 
-    def pagina_clientes(self) -> None:
+    def pagina_clientes(self, e : ft.ControlEvent = None) -> None:
 
         # Obtém lista de objetos do tipo Cliente
         clientes = self.tela.bd.usuarios.obter_clientes()
@@ -177,17 +177,26 @@ class PaginaClientes(SubTela):
         self.tela.bd.numeros.modificar_proprieatario(numero, novo_proprieatario)
         self.tela.page.open(self.tela.dialogo(title=ft.Text("Número alterado com sucesso"),
                                               content=ft.Text(f"Proprieatário do número {numero.numero} alterado para {novo_proprieatario}"),
-                                              on_dimiss=self.pagina_clientes))
+                                              on_dismiss=self.pagina_clientes))
         self.tela.page.update()
 
+
     def modificar_plano(self, e : ft.ControlEvent = None, numero : Numero = None, novo_plano : str = ''):
-        plano = self.tela.bd.planos.obter_plano(novo_plano)     # busca o plano através do nome
-        id_ass = self.tela.bd.assinaturas.obter_id_assinatura(numero.numero)   # obtém a assinatura associada ao número
+        
+        plano = self.tela.bd.planos.obter_plano(novo_plano)
+        id_ass = self.tela.bd.assinaturas.obter_id_assinatura(numero.numero)
         nova_assinatura = Assinatura(plano, datetime.now(), True)
         self.tela.bd.assinaturas.modificar(id_ass, nova_assinatura)
-        self.tela.page.open(self.tela.dialogo(title=ft.Text("Número alterado com sucesso"),
-                                              content=ft.Text(f"Assinatura do número {numero.numero} alterada para o plano '{novo_plano}'"),
-                                              on_dimiss=self.pagina_clientes))
+        
+        numero.assinatura = nova_assinatura  # <- ESSENCIAL
+        
+        self.tela.page.open(
+            self.tela.dialogo(
+                title=ft.Text("Número alterado com sucesso"),
+                content=ft.Text(f"Assinatura do número {numero.numero} alterada para o plano '{novo_plano}'"),
+                on_dismiss=self.pagina_clientes
+            )
+        )
         self.tela.page.update()
 
 

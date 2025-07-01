@@ -15,7 +15,6 @@ class TelaBase():
         self.cor_cartao_3 : str = "#FFFFFF"
         self.cor_dialogo : str = "#FFFFFF"
         self.definir_cor_azul()
-
         self.bd = GerenciadorBanco('database/exemplo.db')
 
 

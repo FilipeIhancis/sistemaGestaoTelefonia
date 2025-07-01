@@ -177,7 +177,7 @@ class PaginaNumeros(SubTela):
                 ft.Text(f"{73}% utilizados ({730} MB de {1000} MB)"),
                 barra_progresso(73),
                 ft.Row([self.tela.criar_botao("Comprar pacote extra", ft.Icons.ADD, funcao=self.comprar_dados),
-                        self.tela.criar_botao("Ver consumo", ft.Icons.LIST_ALT, funcao=self.consumo_dados)],
+                        self.tela.criar_botao("Ver consumo", ft.Icons.LIST_ALT, funcao= lambda e: self.consumo_dados(numero=numero))],
                        alignment=ft.MainAxisAlignment.START, spacing = 10),
             ])
         )
@@ -459,7 +459,7 @@ class PaginaNumeros(SubTela):
         ], spacing = 20))
     
     
-    def consumo_dados(self, e : ft.ControlEvent = None) -> None:
+    def consumo_dados(self, e : ft.ControlEvent = None, numero : Numero = None) -> None:
         
         def criar_linha(dados : list[str] = None) -> ft.DataRow:
             return ft.DataRow(
@@ -468,7 +468,7 @@ class PaginaNumeros(SubTela):
         
         cabecalho = ft.Container(content=ft.Column([
             ft.Row([ft.Icon(ft.Icons.BAR_CHART), ft.Text("Detalhe de consumo de Internet", weight=ft.FontWeight.BOLD, size = 22)], spacing=15),
-            ft.Row([ft.Text("Número: ", weight=ft.FontWeight.BOLD, size=20), ft.Text("(31) XXXXX-XXXX", size=20)], spacing=5)
+            ft.Row([ft.Text("Número: ", weight=ft.FontWeight.BOLD, size=20), ft.Text(self.tela.formatarNumero(numero.numero), size=20)], spacing=5)
         ]))
 
         periodo = ft.DatePicker(first_date=datetime.datetime(year=2000, month=10, day=1), last_date=datetime.datetime(year=2025, month=10, day=1))
